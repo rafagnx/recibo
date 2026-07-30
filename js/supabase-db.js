@@ -43,18 +43,29 @@ const SupabaseDB = {
         // Check if we have localStorage data to migrate
         const localOwner = localStorage.getItem('recibo_owner');
         
-        // Check if supabase already has data
-        const { count } = await this._client
-            .from('owners')
-            .select('*', { count: 'exact', head: true });
-        
-        if (count > 0) {
-            // Already has data, no need to migrate
-            localStorage.setItem('recibo_migrated_supabase', 'true');
-            return;
-        }
-
         try {
+            // Check if supabase already has data
+            const { data: ownersData } = await this._client
+                .from('owners')
+                .select('id')
+                .limit(1);
+            
+            const hasSupabaseData = ownersData && ownersData.length > 0;
+            
+            if (hasSupabaseData && !localOwner) {
+                // Supabase has data but local is empty → sync DOWN
+                localStorage.setItem('recibo_migrated_supabase', 'true');
+                await this._syncDown();
+                return;
+            }
+
+            if (hasSupabaseData) {
+                // Already has data, no need to migrate up
+                localStorage.setItem('recibo_migrated_supabase', 'true');
+                return;
+            }
+
+            // ⬇️ Only reaches here if Supabase is empty AND local has data
             // Migrate owner
             if (localOwner) {
                 const owner = JSON.parse(localOwner);
@@ -134,6 +145,80 @@ const SupabaseDB = {
             console.log('✅ Dados migrados do localStorage para Supabase!');
         } catch (e) {
             console.error('❌ Erro na migração:', e);
+        }
+    },
+
+    // ==================== SYNC DOWN (Supabase → localStorage) ====================
+    async _syncDown() {
+        try {
+            // Sync owner
+            const { data: owners } = await this._client
+                .from('owners')
+                .select('*')
+                .limit(1);
+            if (owners && owners.length > 0) {
+                const o = owners[0];
+                localStorage.setItem('recibo_owner', JSON.stringify({
+                    name: o.name || '', cpf: o.cpf || '', beneficiary: o.beneficiary || ''
+                }));
+            }
+
+            // Sync tenants
+            const { data: tenants } = await this._client
+                .from('tenants')
+                .select('*');
+            if (tenants && tenants.length > 0) {
+                localStorage.setItem('recibo_tenants', JSON.stringify(tenants.map(t => ({
+                    id: t.id, nome: t.nome, cpf: t.cpf || '',
+                    telefone: t.telefone || '', email: t.email || ''
+                }))));
+            }
+
+            // Sync contracts
+            const { data: contracts } = await this._client
+                .from('contracts')
+                .select('*');
+            if (contracts && contracts.length > 0) {
+                localStorage.setItem('recibo_contracts', JSON.stringify(contracts.map(c => ({
+                    id: c.id, tenantId: c.tenant_id,
+                    imovelEndereco: c.imovel_endereco,
+                    imovelTipo: c.imovel_tipo || 'residencial',
+                    valorAluguel: c.valor_aluguel,
+                    valorCondominio: c.valor_condominio || 0,
+                    valorIPTU: c.valor_iptu || 0,
+                    valorGaragem: c.valor_garagem || 0,
+                    valorTotal: c.valor_total,
+                    diaVencimento: c.dia_vencimento || 5,
+                    dataInicio: c.data_inicio || null,
+                    dataFim: c.data_fim || null,
+                    status: c.status || 'ativo'
+                }))));
+            }
+
+            // Sync receipts
+            const { data: receipts } = await this._client
+                .from('receipts')
+                .select('*');
+            if (receipts && receipts.length > 0) {
+                localStorage.setItem('recibo_receipts', JSON.stringify(receipts.map(r => ({
+                    id: r.id, contractId: r.contract_id, tenantId: r.tenant_id,
+                    numero: r.numero || 1, year: r.year, month: r.month,
+                    competencia: r.competencia,
+                    valorAluguel: r.valor_aluguel,
+                    valorCondominio: r.valor_condominio || 0,
+                    valorIPTU: r.valor_iptu || 0,
+                    valorGaragem: r.valor_garagem || 0,
+                    valorTotal: r.valor_total,
+                    vencimento: r.vencimento || null,
+                    status: r.status || 'pendente',
+                    dataEmissao: r.data_emissao,
+                    dataPagamento: r.data_pagamento || null
+                }))));
+            }
+
+            console.log('✅ Dados sincronizados do Supabase para localStorage!');
+        } catch (e) {
+            console.error('❌ Erro na sincronização:', e);
         }
     },
 

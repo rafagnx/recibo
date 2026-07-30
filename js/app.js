@@ -32,8 +32,18 @@ function doLogout() {
     document.getElementById('loginError').textContent = '';
 }
 
-function initApp() {
+async function initApp() {
     updateCurrentDate();
+    
+    // 🔄 Auto-conecta no Supabase e sincroniza dados
+    const ready = await SupabaseDB.init(
+        'https://mohxyhnxmhkexhqapoxg.supabase.co',
+        'sb_publishable_G6Oow9uVsgd3-HD3NGvyMw_l9q3GfqW'
+    );
+    if (ready) {
+        console.log('☁️ Supabase conectado automaticamente');
+    }
+    
     loadOwnerData();
     populateTenantSelect();
     updateDashboard();
