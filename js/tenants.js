@@ -1,0 +1,216 @@
+/* ============================================================
+   👥 APOLLOSURFACE — Tenants Module (Inquilinos)
+   ============================================================ */
+
+function openTenantModal(id) {
+    const modal = document.getElementById('tenantModal');
+    const form = document.getElementById('tenantForm');
+    form.reset();
+    document.getElementById('tenantId').value = '';
+    document.getElementById('tenantModalTitle').textContent = 'Novo Inquilino';
+    if (id) {
+        const t = DB.getTenant(id);
+        if (!t) return;
+        document.getElementById('tenantModalTitle').textContent = 'Editar Inquilino';
+        document.getElementById('tenantId').value = t.id;
+        document.getElementById('tNome').value = t.nome || '';
+        document.getElementById('tCPF').value = t.cpf || '';
+        document.getElementById('tTelefone').value = t.telefone || '';
+        document.getElementById('tEmail').value = t.email || '';
+        document.getElementById('tRG').value = t.rg || '';
+        document.getElementById('tNascimento').value = t.nascimento || '';
+        document.getElementById('tEndereco').value = t.endereco || '';
+        document.getElementById('tObs').value = t.obs || '';
+    }
+    modal.classList.add('active');
+}
+
+function closeTenantModal() {
+    document.getElementById('tenantModal').classList.remove('active');
+}
+
+function saveTenant(e) {
+    e.preventDefault();
+    const id = document.getElementById('tenantId').value;
+    const data = {
+        nome: document.getElementById('tNome').value.trim(),
+        cpf: document.getElementById('tCPF').value.trim(),
+        telefone: document.getElementById('tTelefone').value.trim(),
+        email: document.getElementById('tEmail').value.trim(),
+        rg: document.getElementById('tRG').value.trim(),
+        nascimento: document.getElementById('tNascimento').value,
+        endereco: document.getElementById('tEndereco').value.trim(),
+        obs: document.getElementById('tObs').value.trim()
+    };
+    if (id) {
+        DB.updateTenant(id, data);
+        showToast('Inquilino atualizado!', 'success');
+    } else {
+        DB.addTenant(data);
+        showToast('Inquilino cadastrado!', 'success');
+    }
+    closeTenantModal();
+    renderTenants();
+    populateTenantSelect();
+    updateDashboard();
+}
+
+function deleteTenant(id) {
+    const t = DB.getTenant(id);
+    if (!t) return;
+    if (!confirm(`Excluir "${t.nome}" e todos os seus documentos?`)) return;
+    DB.deleteTenant(id);
+    showToast('Inquilino excluído.', 'success');
+    renderTenants();
+    populateTenantSelect();
+    updateDashboard();
+}
+
+function viewTenant(id) {
+    const t = DB.getTenant(id);
+    if (!t) return;
+    document.getElementById('tenantDetailTitle').textContent = `📋 ${t.nome}`;
+    let html = `
+    <div style="color:#1a1a2e;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;white-space:nowrap;vertical-align:top;">Nome</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.nome)}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">CPF</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${t.cpf || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">RG</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${t.rg || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Telefone</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${t.telefone || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Email</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${t.email || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Nascimento</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${t.nascimento ? formatDate(t.nascimento) : '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Endereço</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.endereco || '—')}</td></tr>
+            ${t.obs ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;vertical-align:top;">Obs</td>
+                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.obs)}</td></tr>` : ''}
+        </table>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">
+        <h4 style="margin-bottom:12px;font-size:0.938rem;">📎 Documentos</h4>
+        <div id="tenantDocsList">`;
+    
+    const docs = DB.getTenantDocs(id);
+    if (docs.length === 0) {
+        html += `<p style="color:#9ca3af;font-size:0.813rem;">Nenhum documento anexado.</p>`;
+    } else {
+        docs.forEach(d => {
+            const isImage = d.type?.startsWith('image/');
+            const isPDF = d.type === 'application/pdf';
+            const icon = isImage ? 'fa-image' : isPDF ? 'fa-file-pdf' : 'fa-file-alt';
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+                <i class="fas ${icon}" style="color:#6366f1;width:20px;"></i>
+                <div style="flex:1;">
+                    <div style="font-weight:500;font-size:0.875rem;">${escapeHtml(d.name)}</div>
+                    <div style="font-size:0.75rem;color:#9ca3af;">${formatFileSize(d.size)}</div>
+                </div>
+                <button class="action-btn" onclick="downloadDoc('${d.id}')" title="Download">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteDoc('${d.id}','${id}')" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>`;
+        });
+    }
+    
+    html += `</div>
+        <div style="margin-top:16px;">
+            <label style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:2px dashed #d1d5db;border-radius:8px;cursor:pointer;font-size:0.875rem;color:#6b7280;transition:all 0.2s;" 
+                   onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" 
+                   onmouseout="this.style.borderColor='#d1d5db';this.style.color='#6b7280'">
+                <i class="fas fa-upload"></i> Anexar Documento (PDF, DOCX, Imagens...)
+                <input type="file" style="display:none" multiple onchange="uploadDocs('${id}',event)">
+            </label>
+        </div>
+    </div>`;
+    
+    document.getElementById('tenantDetailBody').innerHTML = html;
+    document.getElementById('tenantDetailModal').classList.add('active');
+}
+
+function closeTenantDetailModal() {
+    document.getElementById('tenantDetailModal').classList.remove('active');
+}
+
+async function uploadDocs(tenantId, event) {
+    const files = event.target.files;
+    if (!files.length) return;
+    let count = 0;
+    for (const file of files) {
+        try { await DB.addDocument(file, tenantId); count++; }
+        catch(e) { console.error(e); }
+    }
+    showToast(`${count} documento(s) anexado(s)!`, 'success');
+    viewTenant(tenantId);
+    renderTenants();
+}
+
+function downloadDoc(docId) {
+    const doc = DB.getDocument(docId);
+    if (!doc) return;
+    const a = document.createElement('a');
+    a.href = doc.data;
+    a.download = doc.name;
+    a.click();
+}
+
+function deleteDoc(docId, tenantId) {
+    if (!confirm('Excluir este documento?')) return;
+    DB.deleteDocument(docId);
+    showToast('Documento excluído.', 'info');
+    viewTenant(tenantId);
+    renderTenants();
+}
+
+function renderTenants() {
+    const tbody = document.getElementById('tenantsTableBody');
+    const search = (document.getElementById('tenantSearch')?.value || '').toLowerCase();
+    let tenants = DB.getTenants();
+    if (search) {
+        tenants = tenants.filter(t => 
+            t.nome?.toLowerCase().includes(search) ||
+            t.cpf?.includes(search) ||
+            t.telefone?.includes(search) ||
+            t.email?.toLowerCase().includes(search)
+        );
+    }
+    tenants.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    if (!tenants.length) {
+        tbody.innerHTML = `<tr class="empty-row"><td colspan="6">
+            <div class="empty-state"><i class="fas fa-users"></i><p>Nenhum inquilino cadastrado.</p></div>
+        </td></tr>`;
+        return;
+    }
+    tbody.innerHTML = tenants.map(t => {
+        const docs = DB.getTenantDocs(t.id);
+        return `<tr>
+            <td><div style="font-weight:600;color:var(--text-primary);">${escapeHtml(t.nome)}</div></td>
+            <td>${t.cpf || '—'}</td>
+            <td>${t.telefone || '—'}</td>
+            <td>${t.email || '—'}</td>
+            <td><span class="status-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;">
+                <i class="fas fa-paperclip" style="font-size:0.75rem;"></i> ${docs.length}
+            </span></td>
+            <td>
+                <div class="action-btns">
+                    <button class="action-btn view-btn" onclick="viewTenant('${t.id}')" title="Detalhes"><i class="fas fa-eye"></i></button>
+                    <button class="action-btn edit-btn" onclick="openTenantModal('${t.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn delete-btn" onclick="deleteTenant('${t.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function populateTenantSelect() {
+    const sel = document.getElementById('cTenantId');
+    if (!sel) return;
+    const tenants = DB.getTenants();
+    sel.innerHTML = '<option value="">Selecione um inquilino...</option>' +
+        tenants.map(t => `<option value="${t.id}">${escapeHtml(t.nome)} ${t.cpf ? '- CPF: '+t.cpf : ''}</option>`).join('');
+}

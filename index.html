@@ -1,0 +1,575 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Aluguéis — Recibos & Contratos</title>
+    <meta name="description" content="Sistema completo para gestão de contratos de locação e recibos mensais de aluguel.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/print.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card glass">
+            <div class="login-logo">
+                <i class="fas fa-building"></i>
+            </div>
+            <h1 class="login-title">Gestão de Aluguéis</h1>
+            <p class="login-subtitle">Faça login para acessar o sistema</p>
+            <div class="login-form">
+                <div class="login-input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="loginUser" placeholder="Usuário" value="admin">
+                </div>
+                <div class="login-input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="loginPass" placeholder="Senha" onkeydown="if(event.key==='Enter') doLogin()">
+                </div>
+                <button class="btn btn-primary login-btn" onclick="doLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                <p id="loginError" class="login-error"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-building"></i>
+                <span>Gestão de Aluguéis</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="tenants">
+                <i class="fas fa-users"></i>
+                <span>Inquilinos</span>
+            </a>
+            <a href="#" class="nav-item" data-page="contracts">
+                <i class="fas fa-file-contract"></i>
+                <span>Contratos</span>
+            </a>
+            <a href="#" class="nav-item" data-page="receipts">
+                <i class="fas fa-receipt"></i>
+                <span>Recibos</span>
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="version-info">v2.0.0</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="topbar-title">
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="topbar-actions">
+                <div class="current-date" id="currentDate"></div>
+                <button class="btn btn-ghost logout-btn" onclick="doLogout()" title="Sair">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-container">
+            <!-- ==================== DASHBOARD ==================== -->
+            <section class="page active" id="page-dashboard">
+                <div class="dashboard-grid">
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Inquilinos</span>
+                            <span class="stat-value" id="statTenants">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Contratos Ativos</span>
+                            <span class="stat-value" id="statActiveContracts">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Pagos Este Mês</span>
+                            <span class="stat-value" id="statPaidReceipts">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Pendentes</span>
+                            <span class="stat-value" id="statPendingReceipts">0</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card glass wide" id="revenueCard">
+                        <div class="card-header">
+                            <h2><i class="fas fa-chart-bar"></i> Receita Mensal</h2>
+                        </div>
+                        <div class="card-body" id="revenueChart"></div>
+                    </div>
+
+                    <div class="dashboard-card glass">
+                        <div class="card-header">
+                            <h2><i class="fas fa-file-contract"></i> Contratos Recentes</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="empty-state" id="recentContracts"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card glass">
+                        <div class="card-header">
+                            <h2><i class="fas fa-bell"></i> Vencimentos Próximos</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="empty-state" id="dueSoon"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== TENANTS ==================== -->
+            <section class="page" id="page-tenants">
+                <div class="page-toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="tenantSearch" placeholder="Buscar inquilinos..." oninput="renderTenants()">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openTenantModal()">
+                        <i class="fas fa-plus"></i> Novo Inquilino
+                    </button>
+                </div>
+                <div class="table-container glass">
+                    <table class="data-table" id="tenantsTable">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>CPF</th>
+                                <th>Telefone</th>
+                                <th>Email</th>
+                                <th>Documentos</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tenantsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ==================== CONTRACTS ==================== -->
+            <section class="page" id="page-contracts">
+                <div class="page-toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="contractSearch" placeholder="Buscar contratos..." oninput="renderContracts()">
+                        </div>
+                        <select class="filter-select" id="contractStatusFilter" onchange="renderContracts()">
+                            <option value="all">Todos os status</option>
+                            <option value="ativo">Ativos</option>
+                            <option value="encerrado">Encerrados</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="openContractModal()">
+                        <i class="fas fa-plus"></i> Novo Contrato
+                    </button>
+                </div>
+                <div class="table-container glass">
+                    <table class="data-table" id="contractsTable">
+                        <thead>
+                            <tr>
+                                <th>Inquilino</th>
+                                <th>Imóvel</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ==================== RECEIPTS ==================== -->
+            <section class="page" id="page-receipts">
+                <div class="page-toolbar">
+                    <div class="toolbar-left">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="receiptSearch" placeholder="Buscar recibos..." oninput="renderReceipts()">
+                        </div>
+                        <select class="filter-select" id="receiptMonthFilter" onchange="renderReceipts()"></select>
+                        <select class="filter-select" id="receiptStatusFilter" onchange="renderReceipts()">
+                            <option value="all">Todos os status</option>
+                            <option value="pago">Pagos</option>
+                            <option value="pendente">Pendentes</option>
+                            <option value="atrasado">Atrasados</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="generateAllReceipts()">
+                        <i class="fas fa-sync"></i> Gerar Recibos do Mês
+                    </button>
+                </div>
+                <div class="table-container glass">
+                    <table class="data-table" id="receiptsTable">
+                        <thead>
+                            <tr>
+                                <th>Inquilino</th>
+                                <th>Competência</th>
+                                <th>Valor</th>
+                                <th>Vencimento</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiptsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ==================== SETTINGS ==================== -->
+            <section class="page" id="page-settings">
+                <div class="settings-container">
+                    <div class="settings-card glass">
+                        <div class="card-header"><h2><i class="fas fa-file-alt"></i> Dados Pessoais do Proprietário</h2></div>
+                        <div class="card-body">
+                            <p>Esses dados aparecem nos recibos como "Recebi de" e "Emitente".</p>
+                            <div class="form-section" style="margin-top: 16px;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ownerName">Nome do Proprietário</label>
+                                        <input type="text" id="ownerName" placeholder="Seu nome completo" oninput="saveOwnerData()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ownerCPF">CPF / CNPJ</label>
+                                        <input type="text" id="ownerCPF" placeholder="000.000.000-00" oninput="formatCPF(this); saveOwnerData()">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="ownerBeneficiary">Beneficiário (se diferente)</label>
+                                        <input type="text" id="ownerBeneficiary" placeholder="Quem recebe o dinheiro" oninput="saveOwnerData()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card glass">
+                        <div class="card-header"><h2><i class="fas fa-download"></i> Backup de Dados</h2></div>
+                        <div class="card-body">
+                            <p>Exporte seus dados para um arquivo JSON ou importe um backup anterior.</p>
+                            <div class="settings-actions">
+                                <button class="btn btn-primary" onclick="exportBackup()">
+                                    <i class="fas fa-download"></i> Exportar Backup
+                                </button>
+                                <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                                    <i class="fas fa-upload"></i> Importar Backup
+                                </button>
+                                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    <div class="settings-card glass">
+                        <div class="card-header"><h2><i class="fas fa-cloud-upload-alt"></i> ☁️ Supabase — Cloud Database</h2></div>
+                        <div class="card-body">
+                            <p>Conecte ao Supabase para salvar seus dados na nuvem. Os dados ficam acessíveis de qualquer lugar!</p>
+                            <div class="form-section" style="margin-top: 16px;">
+                                <div class="form-row">
+                                    <div class="form-group" style="flex:2">
+                                        <label for="supabaseUrl">Supabase URL</label>
+                                        <input type="text" id="supabaseUrl" placeholder="https://seuprojeto.supabase.co" oninput="saveSupabaseSettings()">
+                                    </div>
+                                    <div class="form-group" style="flex:3">
+                                        <label for="supabaseKey">Supabase Anon Key</label>
+                                        <input type="text" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." oninput="saveSupabaseSettings()">
+                                    </div>
+                                </div>
+                                <div class="settings-actions" style="margin-top: 12px;">
+                                    <button class="btn btn-primary" onclick="connectSupabase()">
+                                        <i class="fas fa-plug"></i> Conectar / Testar Conexão
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="disconnectSupabase()">
+                                        <i class="fas fa-unlink"></i> Desconectar
+                                    </button>
+                                    <span id="supabaseStatus" style="margin-left: 12px; font-weight: 600;"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card glass">
+                        <div class="card-header"><h2><i class="fas fa-trash-alt"></i> Gerenciar Dados</h2></div>
+                        <div class="card-body">
+                            <p>Limpe todos os dados do sistema. Esta ação não pode ser desfeita.</p>
+                            <button class="btn btn-danger" onclick="clearAllData()">
+                                <i class="fas fa-trash"></i> Limpar Todos os Dados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ==================== TENANT MODAL ==================== -->
+    <div class="modal-overlay" id="tenantModal">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h2 id="tenantModalTitle">Novo Inquilino</h2>
+                <button class="modal-close" onclick="closeTenantModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="tenantForm" onsubmit="saveTenant(event)">
+                    <input type="hidden" id="tenantId">
+                    <div class="form-section">
+                        <h3><i class="fas fa-user"></i> Dados Pessoais</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tNome">Nome Completo *</label>
+                                <input type="text" id="tNome" required placeholder="Nome do inquilino">
+                            </div>
+                            <div class="form-group">
+                                <label for="tCPF">CPF</label>
+                                <input type="text" id="tCPF" placeholder="000.000.000-00" oninput="formatCPF(this)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tTelefone">Telefone</label>
+                                <input type="text" id="tTelefone" placeholder="(11) 99999-9999" oninput="formatPhone(this)">
+                            </div>
+                            <div class="form-group">
+                                <label for="tEmail">E-mail</label>
+                                <input type="email" id="tEmail" placeholder="inquilino@email.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tRG">RG</label>
+                                <input type="text" id="tRG" placeholder="RG do inquilino">
+                            </div>
+                            <div class="form-group">
+                                <label for="tNascimento">Data de Nascimento</label>
+                                <input type="date" id="tNascimento">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-home"></i> Endereço Atual</h3>
+                        <div class="form-group">
+                            <label for="tEndereco">Endereço</label>
+                            <input type="text" id="tEndereco" placeholder="Rua, número, bairro, cidade - UF">
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-file-alt"></i> Observações</h3>
+                        <div class="form-group">
+                            <textarea id="tObs" rows="3" placeholder="Observações sobre o inquilino..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeTenantModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Inquilino</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TENANT DETAIL MODAL ==================== -->
+    <div class="modal-overlay" id="tenantDetailModal">
+        <div class="modal glass modal-lg">
+            <div class="modal-header">
+                <h2 id="tenantDetailTitle">Detalhes do Inquilino</h2>
+                <button class="modal-close" onclick="closeTenantDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="tenantDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- ==================== CONTRACT MODAL ==================== -->
+    <div class="modal-overlay" id="contractModal">
+        <div class="modal glass">
+            <div class="modal-header">
+                <h2 id="contractModalTitle">Novo Contrato</h2>
+                <button class="modal-close" onclick="closeContractModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="contractForm" onsubmit="saveContract(event)">
+                    <input type="hidden" id="contractId">
+                    <div class="form-section">
+                        <h3><i class="fas fa-user"></i> Inquilino</h3>
+                        <div class="form-group">
+                            <label for="cTenantId">Selecionar Inquilino *</label>
+                            <select id="cTenantId" required></select>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-home"></i> Dados do Imóvel</h3>
+                        <div class="form-group">
+                            <label for="cImovelEndereco">Endereço Completo *</label>
+                            <input type="text" id="cImovelEndereco" required placeholder="Rua, número, bairro, cidade - UF">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cImovelTipo">Tipo de Imóvel</label>
+                                <select id="cImovelTipo">
+                                    <option value="Apartamento">Apartamento</option>
+                                    <option value="Casa">Casa</option>
+                                    <option value="Kitnet">Kitnet</option>
+                                    <option value="Sala Comercial">Sala Comercial</option>
+                                    <option value="Loja">Loja</option>
+                                    <option value="Galpão">Galpão</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-dollar-sign"></i> Valores</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cValorAluguel">Valor do Aluguel *</label>
+                                <div class="input-group">
+                                    <span class="input-prefix">R$</span>
+                                    <input type="number" id="cValorAluguel" required step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cValorCondominio">Condomínio</label>
+                                <div class="input-group">
+                                    <span class="input-prefix">R$</span>
+                                    <input type="number" id="cValorCondominio" step="0.01" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cValorIPTU">IPTU</label>
+                                <div class="input-group">
+                                    <span class="input-prefix">R$</span>
+                                    <input type="number" id="cValorIPTU" step="0.01" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cValorGaragem">Taxa de Garagem</label>
+                                <div class="input-group">
+                                    <span class="input-prefix">R$</span>
+                                    <input type="number" id="cValorGaragem" step="0.01" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row total-row">
+                            <div class="form-group">
+                                <label>Valor Total Mensal</label>
+                                <div class="total-display" id="totalDisplay">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-calendar"></i> Datas</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cDataInicio">Data de Início *</label>
+                                <input type="date" id="cDataInicio" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cDiaVencimento">Dia de Vencimento *</label>
+                                <select id="cDiaVencimento" required>
+                                    <option value="1">Dia 1</option>
+                                    <option value="5">Dia 5</option>
+                                    <option value="10" selected>Dia 10</option>
+                                    <option value="15">Dia 15</option>
+                                    <option value="20">Dia 20</option>
+                                    <option value="25">Dia 25</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cDataFim">Data de Fim</label>
+                                <input type="date" id="cDataFim">
+                                <small>Deixe em branco para contrato por tempo indeterminado</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3><i class="fas fa-sticky-note"></i> Observações</h3>
+                        <div class="form-group">
+                            <textarea id="cObservacoes" rows="3" placeholder="Observações adicionais..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeContractModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Contrato</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== RECEIPT MODAL (Classic Brazilian Style) ==================== -->
+    <div class="modal-overlay" id="receiptModal">
+        <div class="modal glass modal-lg" style="max-width: 1100px;">
+            <div class="modal-body" id="receiptPrintArea"></div>
+            <div class="print-toolbar">
+                <button class="btn btn-primary" onclick="printReceipts()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button class="btn btn-secondary" onclick="closeReceiptModal()">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/db.js"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/supabase-db.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/tenants.js"></script>
+    <script src="js/contracts.js"></script>
+    <script src="js/receipts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+

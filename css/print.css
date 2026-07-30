@@ -1,0 +1,56 @@
+@media print {
+    @page {
+        margin: 3mm;
+        size: A4 landscape;
+    }
+    body, html { margin: 0 !important; padding: 0 !important; background: white !important; }
+    body > * { display: none !important; }
+    body > .modal-overlay.active {
+        display: flex !important;
+        position: static !important;
+        background: white !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    .modal-overlay.active .modal {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    .modal-overlay.active .modal-body {
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+    }
+    .modal-overlay.active .receipt-double {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+    }
+    .modal-overlay.active .via-container { padding: 6mm 5mm !important; }
+    .modal-overlay.active .via-cut-hint { display: none !important; }
+    .modal-overlay.active .contract-print-wrapper {
+        padding: 6mm 5mm !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    .modal-overlay.active .modal-header,
+    .modal-overlay.active .print-toolbar {
+        display: none !important;
+    }
+    .sidebar, .topbar, .page-container, .toast-container,
+    .page, .page.active, .main-content {
+        display: none !important;
+    }
+}
