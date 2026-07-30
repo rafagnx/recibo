@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Migração para Supabase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1e1e2e; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: #252538; border-radius: 16px; padding: 40px; max-width: 600px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        h1 { color: #00c9a7; margin-bottom: 20px; font-size: 24px; }
+        .status { margin: 16px 0; padding: 16px; border-radius: 8px; background: #1e1e2e; font-family: monospace; font-size: 13px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+        .btn { background: #00c9a7; color: #1e1e2e; border: none; padding: 14px 28px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 16px; }
+        .btn:hover { background: #00e6be; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>☁️ Migração → Supabase</h1>
+        <p>Clique no botão abaixo para enviar seus dados locais para a nuvem.</p>
+        <div class="status" id="log">Aguardando...</div>
+        <button class="btn" id="migrateBtn" onclick="migrate()">🚀 Migrar Dados Agora</button>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://mohxyhnxmhkexhqapoxg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_G6Oow9uVsgd3-HD3NGvyMw_l9q3GfqW';
+
+        function log(msg, type = '') {
+            const el = document.getElementById('log');
+            const span = document.createElement('div');
+            span.className = type;
+            span.textContent = msg;
+            el.appendChild(span);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        async function migrate() {
+            const btn = document.getElementById('migrateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Migrando...';
+            document.getElementById('log').innerHTML = '';
+
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            log('✅ Conectado ao Supabase', 'success');
+
+            // Read localStorage
+            const owner = JSON.parse(localStorage.getItem('recibo_owner') || 'null');
+            const tenants = JSON.parse(localStorage.getItem('recibo_tenants') || '[]');
+            const contracts = JSON.parse(localStorage.getItem('recibo_contracts') || '[]');
+            const receipts = JSON.parse(localStorage.getItem('recibo_receipts') || '[]');
+
+            log(`📊 Dados locais encontrados:`, 'info');
+            log(`   Owner: ${owner ? owner.name || '(sem nome)' : 'Nenhum'}`);
+            log(`   Inquilinos: ${tenants.length}`);
+            log(`   Contratos: ${contracts.length}`);
+            log(`   Recibos: ${receipts.length}`);
+
+            if (!tenants.length && !contracts.length) {
+                log('⚠️ Nenhum dado para migrar!', 'error');
+                btn.disabled = false;
+                btn.textContent = '🚀 Migrar Dados Agora';
+                return;
+            }
+
+            // Migrate owner
+            if (owner && owner.name) {
+                log('📤 Migrando proprietário...', 'info');
+                const { data: existing } = await client.from('owners').select('id').limit(1);
+                if (existing && existing.length > 0) {
+                    const { error } = await client.from('owners')
+                        .update({ name: owner.name, cpf: owner.cpf || '', beneficiary: owner.beneficiary || '' })
+                        .eq('id', existing[0].id);
+                    if (error) log(`❌ Erro owner: ${error.message}`, 'error');
+                    else log('✅ Proprietário atualizado', 'success');
+                } else {
+                    const { error } = await client.from('owners')
+                        .insert({ name: owner.name, cpf: owner.cpf || '', beneficiary: owner.beneficiary || '' });
+                    if (error) log(`❌ Erro owner insert: ${error.message}`, 'error');
+                    else log('✅ Proprietário inserido', 'success');
+                }
+            }
+
+            // Migrate tenants
+            for (const t of tenants) {
+                log(`📤 Migrando inquilino: ${t.nome}`, 'info');
+                const { error } = await client.from('tenants').upsert({
+                    id: t.id, nome: t.nome, cpf: t.cpf || '',
+                    telefone: t.telefone || '', email: t.email || ''
+                }, { onConflict: 'id' });
+                if (error) log(`❌ Erro tenant ${t.nome}: ${error.message}`, 'error');
+                else log(`✅ ${t.nome} migrado`, 'success');
+            }
+
+            // Migrate contracts
+            for (const c of contracts) {
+                log(`📤 Migrando contrato: ${(c.imovelEndereco || '').slice(0, 30)}...`, 'info');
+                const { error } = await client.from('contracts').upsert({
+                    id: c.id, tenant_id: c.tenantId,
+                    imovel_endereco: c.imovelEndereco,
+                    valor_aluguel: c.valorAluguel || 0,
+                    valor_condominio: c.valorCondominio || 0,
+                    valor_iptu: c.valorIPTU || 0,
+                    valor_garagem: c.valorGaragem || 0,
+                    valor_total: c.valorTotal || 0,
+                    dia_vencimento: c.diaVencimento || 5,
+                    data_inicio: c.dataInicio || null,
+                    data_fim: c.dataFim || null,
+                    status: c.status || 'ativo'
+                }, { onConflict: 'id' });
+                if (error) log(`❌ Erro contract: ${error.message}`, 'error');
+                else log(`✅ Contrato migrado`, 'success');
+            }
+
+            // Migrate receipts
+            for (const r of receipts) {
+                log(`📤 Migrando recibo: ${r.competencia || r.id}`, 'info');
+                const { error } = await client.from('receipts').upsert({
+                    id: r.id, contract_id: r.contractId, tenant_id: r.tenantId,
+                    numero: r.numero || 1, year: r.year, month: r.month,
+                    competencia: r.competencia || `${String(r.month + 1).padStart(2, '0')}/${r.year}`,
+                    valor_aluguel: r.valorAluguel || 0,
+                    valor_condominio: r.valorCondominio || 0,
+                    valor_iptu: r.valorIPTU || 0,
+                    valor_garagem: r.valorGaragem || 0,
+                    valor_total: r.valorTotal || 0,
+                    vencimento: r.vencimento || null,
+                    status: r.status || 'pendente',
+                    data_emissao: r.dataEmissao || new Date().toISOString().split('T')[0],
+                    data_pagamento: r.dataPagamento || null
+                }, { onConflict: 'id' });
+                if (error) log(`❌ Erro receipt: ${error.message}`, 'error');
+                else log(`✅ Recibo migrado`, 'success');
+            }
+
+            log('');
+            log('🎉 MIGRAÇÃO COMPLETA! Seus dados estão na nuvem.', 'success');
+            log('Agora abra recibo-rho.vercel.app em aba anônima e veja!', 'success');
+            btn.textContent = '✅ Migração Concluída!';
+        }
+    </script>
+</body>
+</html>

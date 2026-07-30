@@ -104,11 +104,15 @@ function renderRecentContracts(contracts) {
     }
     container.innerHTML = recent.map(c => {
         const t = DB.getTenant(c.tenantId);
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);">
-            <div><div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);">${escapeHtml(t?.nome||'—')}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);">${(c.imovelEndereco||'').slice(0,35)}...</div></div>
-            <div style="text-align:right;"><div style="font-weight:600;color:var(--text-primary);font-size:var(--font-size-sm);">${formatCurrency(c.valorTotal)}</div>
-                <span class="status-badge ${getStatusClass(c.status)}" style="font-size:0.625rem;">${c.status}</span></div>
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);gap:12px;">
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t?.nome||'—')}</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.imovelEndereco||''}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+                <div style="font-weight:600;color:var(--text-primary);font-size:var(--font-size-sm);">${formatCurrency(c.valorTotal)}</div>
+                <span class="status-badge ${getStatusClass(c.status)}" style="font-size:0.625rem;display:inline-block;margin-top:2px;">${c.status}</span>
+            </div>
         </div>`;
     }).join('');
 }
@@ -131,11 +135,15 @@ function renderDueSoon(receipts) {
         const due = new Date(r.vencimento+'T12:00:00');
         const diff = Math.ceil((due-now)/86400000);
         const daysText = r.status==='atrasado'?'⚠️ Vencido': diff===0?'🔴 Hoje': diff===1?'🔴 Amanhã':`🟡 Em ${diff} dias`;
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);">
-            <div><div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);">${escapeHtml(t?.nome||'—')}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);">${daysText}</div></div>
-            <div style="text-align:right;"><div style="font-weight:600;color:var(--text-primary);">${formatCurrency(r.valorTotal)}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);">${formatDate(r.vencimento)}</div></div>
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);gap:12px;">
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t?.nome||'—')}</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${daysText}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+                <div style="font-weight:600;color:var(--text-primary);font-size:var(--font-size-sm);">${formatCurrency(r.valorTotal)}</div>
+                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);margin-top:2px;">${formatDate(r.vencimento)}</div>
+            </div>
         </div>`;
     }).join('');
 }
