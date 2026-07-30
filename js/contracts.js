@@ -95,36 +95,36 @@ function viewContract(id) {
     if (!c) return;
     const t = DB.getTenant(c.tenantId);
     showQuickModal('Detalhes do Contrato', `
-    <div style="color:#1a1a2e;">
+    <div style="color:var(--text-primary);">
         <table style="width:100%;border-collapse:collapse;">
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Inquilino</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t?.nome||'—')}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">CPF</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t?.cpf||'—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Imóvel</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(c.imovelEndereco)}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Tipo</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${c.imovelTipo}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Aluguel</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${formatCurrency(c.valorAluguel)}</td></tr>
-            ${c.valorCondominio ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Condomínio</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${formatCurrency(c.valorCondominio)}</td></tr>` : ''}
-            ${c.valorIPTU ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">IPTU</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${formatCurrency(c.valorIPTU)}</td></tr>` : ''}
-            ${c.valorGaragem ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Garagem</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${formatCurrency(c.valorGaragem)}</td></tr>` : ''}
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Total</td>
-                <td style="padding:6px 12px;font-size:0.875rem;font-weight:700;">${formatCurrency(c.valorTotal)}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Início</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${formatDate(c.dataInicio)}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Término</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${c.dataFim ? formatDate(c.dataFim) : 'Indeterminado'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Vencimento</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">Dia ${c.diaVencimento}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Status</td>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Inquilino</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(t?.nome||'—')}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">CPF</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t?.cpf||'—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Imóvel</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(c.imovelEndereco)}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Tipo</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${c.imovelTipo}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Aluguel</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${formatCurrency(c.valorAluguel)}</td></tr>
+            ${c.valorCondominio ? `<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Condomínio</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${formatCurrency(c.valorCondominio)}</td></tr>` : ''}
+            ${c.valorIPTU ? `<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">IPTU</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${formatCurrency(c.valorIPTU)}</td></tr>` : ''}
+            ${c.valorGaragem ? `<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Garagem</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${formatCurrency(c.valorGaragem)}</td></tr>` : ''}
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Total</td>
+                <td style="padding:6px 12px;font-size:0.875rem;font-weight:700;color:var(--text-primary);">${formatCurrency(c.valorTotal)}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Início</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${formatDate(c.dataInicio)}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Término</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${c.dataFim ? formatDate(c.dataFim) : 'Indeterminado'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Vencimento</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">Dia ${c.diaVencimento}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Status</td>
                 <td style="padding:6px 12px;font-size:0.875rem;"><span class="status-badge ${getStatusClass(c.status)}">${c.status}</span></td></tr>
-            ${c.observacoes ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;vertical-align:top;">Obs</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(c.observacoes)}</td></tr>` : ''}
+            ${c.observacoes ? `<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;vertical-align:top;">Obs</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(c.observacoes)}</td></tr>` : ''}
         </table>
         <div style="margin-top:16px;">
             <button class="btn btn-primary" onclick="printContract('${c.id}');this.closest('.modal-overlay').remove()">

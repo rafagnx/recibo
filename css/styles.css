@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    🏠 GESTÃO DE ALUGUÉIS — Design System v3
    Recibos & Contratos para Inquilinos
    Tema: Cinza Escuro Sofisticado (Premium & Uniforme)
@@ -302,8 +302,12 @@ a:hover { color: var(--primary-300); }
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-md);
-    margin-bottom: var(--space-md);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.dashboard-grid .dashboard-card {
+    grid-column: span 1;
 }
 
 .dashboard-grid .dashboard-card.wide {
@@ -319,7 +323,7 @@ a:hover { color: var(--primary-300); }
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }

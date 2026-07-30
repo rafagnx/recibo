@@ -71,42 +71,42 @@ function viewTenant(id) {
     if (!t) return;
     document.getElementById('tenantDetailTitle').textContent = `📋 ${t.nome}`;
     let html = `
-    <div style="color:#1a1a2e;">
+    <div style="color:var(--text-primary);">
         <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;white-space:nowrap;vertical-align:top;">Nome</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.nome)}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">CPF</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t.cpf || '—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">RG</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t.rg || '—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Telefone</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t.telefone || '—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Email</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t.email || '—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Nascimento</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${t.nascimento ? formatDate(t.nascimento) : '—'}</td></tr>
-            <tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;">Endereço</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.endereco || '—')}</td></tr>
-            ${t.obs ? `<tr><td style="padding:6px 12px;font-weight:600;color:#6b7280;font-size:0.813rem;vertical-align:top;">Obs</td>
-                <td style="padding:6px 12px;font-size:0.875rem;">${escapeHtml(t.obs)}</td></tr>` : ''}
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;white-space:nowrap;vertical-align:top;">Nome</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(t.nome)}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">CPF</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t.cpf || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">RG</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t.rg || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Telefone</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t.telefone || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Email</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t.email || '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Nascimento</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${t.nascimento ? formatDate(t.nascimento) : '—'}</td></tr>
+            <tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;">Endereço</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(t.endereco || '—')}</td></tr>
+            ${t.obs ? `<tr><td style="padding:6px 12px;font-weight:600;color:var(--text-tertiary);font-size:0.813rem;vertical-align:top;">Obs</td>
+                <td style="padding:6px 12px;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(t.obs)}</td></tr>` : ''}
         </table>
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">
-        <h4 style="margin-bottom:12px;font-size:0.938rem;">📎 Documentos</h4>
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0;">
+        <h4 style="margin-bottom:12px;font-size:0.938rem;color:var(--text-primary);">📎 Documentos</h4>
         <div id="tenantDocsList">`;
     
     const docs = DB.getTenantDocs(id);
     if (docs.length === 0) {
-        html += `<p style="color:#9ca3af;font-size:0.813rem;">Nenhum documento anexado.</p>`;
+        html += `<p style="color:var(--text-tertiary);font-size:0.813rem;">Nenhum documento anexado.</p>`;
     } else {
         docs.forEach(d => {
             const isImage = d.type?.startsWith('image/');
             const isPDF = d.type === 'application/pdf';
             const icon = isImage ? 'fa-image' : isPDF ? 'fa-file-pdf' : 'fa-file-alt';
-            html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
-                <i class="fas ${icon}" style="color:#6366f1;width:20px;"></i>
+            html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <i class="fas ${icon}" style="color:var(--accent-500);width:20px;"></i>
                 <div style="flex:1;">
-                    <div style="font-weight:500;font-size:0.875rem;">${escapeHtml(d.name)}</div>
-                    <div style="font-size:0.75rem;color:#9ca3af;">${formatFileSize(d.size)}</div>
+                    <div style="font-weight:500;font-size:0.875rem;color:var(--text-primary);">${escapeHtml(d.name)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-tertiary);">${formatFileSize(d.size)}</div>
                 </div>
                 <button class="action-btn" onclick="downloadDoc('${d.id}')" title="Download">
                     <i class="fas fa-download"></i>
@@ -120,9 +120,9 @@ function viewTenant(id) {
     
     html += `</div>
         <div style="margin-top:16px;">
-            <label style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:2px dashed #d1d5db;border-radius:8px;cursor:pointer;font-size:0.875rem;color:#6b7280;transition:all 0.2s;" 
-                   onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" 
-                   onmouseout="this.style.borderColor='#d1d5db';this.style.color='#6b7280'">
+            <label style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:2px dashed var(--border-color);border-radius:8px;cursor:pointer;font-size:0.875rem;color:var(--text-tertiary);transition:all 0.2s;" 
+                   onmouseover="this.style.borderColor='var(--accent-500)';this.style.color='var(--accent-500)'" 
+                   onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-tertiary)'">
                 <i class="fas fa-upload"></i> Anexar Documento (PDF, DOCX, Imagens...)
                 <input type="file" style="display:none" multiple onchange="uploadDocs('${id}',event)">
             </label>
