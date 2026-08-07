@@ -1125,6 +1125,7 @@ a:hover { color: var(--primary-300); }
 .action-btn.edit-btn:hover { color: var(--accent-400); background: rgba(0, 201, 167, 0.12); }
 .action-btn.delete-btn:hover { color: var(--red-400); background: rgba(239, 68, 68, 0.12); }
 .action-btn.print-btn:hover { color: var(--gold-400); background: rgba(251, 191, 36, 0.12); }
+.action-btn.renew-btn:hover { color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
 
 /* ---- Avatar & User cell ---- */
 .avatar {

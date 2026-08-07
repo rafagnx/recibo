@@ -90,6 +90,123 @@ function deleteContract(id) {
     updateDashboard();
 }
 
+// ==================== RENOVAR CONTRATO ====================
+function renewContract(id) {
+    const c = DB.getContract(id);
+    if (!c) return;
+    const t = DB.getTenant(c.tenantId);
+
+    // Calcula a data base: se o contrato está encerrado/vencido, renova a partir de HOJE;
+    // se ainda está ativo, estende a partir do fim atual.
+    const fimAtual = c.dataFim ? new Date(c.dataFim + 'T12:00:00') : null;
+    const hoje = new Date();
+    const baseDate = (fimAtual && fimAtual > hoje) ? fimAtual : hoje;
+
+    // Soma o número de meses à data base
+    function addMonths(date, months) {
+        const d = new Date(date);
+        const day = d.getDate();
+        d.setDate(1);
+        d.setMonth(d.getMonth() + months);
+        // Ajusta para não estourar o último dia (ex: 31/01 + 1 mês = 28/02)
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(day, lastDay));
+        return d;
+    }
+
+    const tenantNome = escapeHtml(t?.nome || '—');
+    const baseFmt = baseDate.toLocaleDateString('pt-BR');
+    const fimAtualFmt = c.dataFim ? new Date(c.dataFim + 'T12:00:00').toLocaleDateString('pt-BR') : 'Indeterminado';
+
+    showQuickModal('Renovar Contrato', `
+        <div style="color:var(--text-primary);">
+            <p style="margin-bottom:12px;font-size:0.875rem;color:var(--text-secondary);">
+                <strong style="color:var(--text-primary);">${tenantNome}</strong> — ${escapeHtml(c.imovelEndereco)}
+            </p>
+            <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:12px 16px;margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;font-size:0.813rem;margin-bottom:6px;">
+                    <span style="color:var(--text-tertiary);">Fim atual:</span>
+                    <span style="color:var(--text-primary);font-weight:600;">${fimAtualFmt}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.813rem;">
+                    <span style="color:var(--text-tertiary);">Renova a partir de:</span>
+                    <span style="color:var(--accent-400);font-weight:600;">${baseFmt}</span>
+                </div>
+            </div>
+            <label for="renewMonths" style="font-size:0.813rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;">Por quantos meses?</label>
+            <select id="renewMonths" style="width:100%;margin-top:6px;padding:10px 14px;background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border-light);border-radius:10px;font-size:0.938rem;">
+                <option value="6">6 meses</option>
+                <option value="12" selected>12 meses (1 ano)</option>
+                <option value="24">24 meses (2 anos)</option>
+                <option value="36">36 meses (3 anos)</option>
+            </select>
+            <div style="margin-top:16px;font-size:0.813rem;color:var(--text-tertiary);" id="renewPreview">
+                Nova data de término: <strong style="color:var(--accent-400);" id="renewPreviewDate">—</strong>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button class="btn btn-primary" style="flex:1;" onclick="confirmRenewContract('${c.id}')">Renovar</button>
+                <button class="btn btn-secondary" style="flex:1;" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+            </div>
+        </div>`);
+
+    // Atualiza a prévia ao trocar os meses
+    const sel = document.getElementById('renewMonths');
+    sel.addEventListener('change', () => {
+        const nova = addMonths(baseDate, parseInt(sel.value));
+        document.getElementById('renewPreviewDate').textContent = nova.toLocaleDateString('pt-BR');
+    });
+    // Mostra a prévia inicial
+    document.getElementById('renewPreviewDate').textContent = addMonths(baseDate, 12).toLocaleDateString('pt-BR');
+
+    // Guarda no escopo da função para o confirm
+    window._renewBaseDate = baseDate;
+    window._renewContractId = id;
+}
+
+function confirmRenewContract(id) {
+    const months = parseInt(document.getElementById('renewMonths')?.value || 12);
+    const baseDate = window._renewBaseDate || new Date();
+    const c = DB.getContract(id);
+    if (!c) return;
+
+    // Calcula nova data fim
+    function addMonths(date, months) {
+        const d = new Date(date);
+        const day = d.getDate();
+        d.setDate(1);
+        d.setMonth(d.getMonth() + months);
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(day, lastDay));
+        return d;
+    }
+    const novaDataFim = addMonths(baseDate, months).toISOString().split('T')[0];
+
+    const updates = {
+        dataFim: novaDataFim,
+        status: 'ativo',
+        ultimaRenovacao: new Date().toISOString()
+    };
+
+    // Salva no localStorage
+    DB.updateContract(id, updates);
+
+    // Sincroniza com Supabase se conectado
+    if (window.SupabaseDB && SupabaseDB.isReady()) {
+        SupabaseDB.updateContract(id, {
+            data_fim: novaDataFim,
+            status: 'ativo',
+            updated_at: new Date().toISOString()
+        }).catch(err => console.error('Erro ao renovar no Supabase:', err));
+    }
+
+    // Fecha o modal e atualiza
+    const overlay = document.querySelector('.modal-overlay.active');
+    if (overlay) overlay.remove();
+    showToast(`Contrato renovado até ${new Date(novaDataFim + 'T12:00:00').toLocaleDateString('pt-BR')}!`, 'success');
+    renderContracts();
+    updateDashboard();
+}
+
 function viewContract(id) {
     const c = DB.getContract(id);
     if (!c) return;
@@ -171,6 +288,7 @@ function renderContracts() {
             <td>${statusBadge(c.status)}</td>
             <td>
                 <div class="action-btns">
+                    <button class="action-btn renew-btn" onclick="renewContract('${c.id}')" title="Renovar Contrato"><i class="fas fa-sync-alt"></i></button>
                     <button class="action-btn view-btn" onclick="viewContract('${c.id}')" title="Visualizar"><i class="fas fa-eye"></i></button>
                     <button class="action-btn print-btn" onclick="printContract('${c.id}')" title="Imprimir Contrato"><i class="fas fa-print"></i></button>
                     <button class="action-btn edit-btn" onclick="openContractModal('${c.id}')" title="Editar"><i class="fas fa-edit"></i></button>
