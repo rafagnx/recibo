@@ -4,6 +4,7 @@
    ============================================================ */
 
 function openReceiptModal(receiptId) {
+    _currentReceiptId = receiptId;
     const receipt = DB.getReceipt(receiptId);
     if (!receipt) return;
     const contract = DB.getContract(receipt.contractId);
@@ -138,6 +139,71 @@ function closeReceiptModal() {
 
 function printReceipts() {
     window.print();
+}
+
+function downloadReceiptPdf() {
+    const printArea = document.getElementById('receiptPrintArea');
+    if (!printArea || !window.html2pdf) {
+        showToast('Biblioteca de PDF não carregada. Verifique sua conexão.', 'error');
+        return;
+    }
+
+    // Re-renderiza o recibo num container temporário limpo, fora do modal,
+    // para capturar exatamente o layout de duas vias (sem bordas/scroll).
+    const receiptDouble = printArea.querySelector('.receipt-double');
+    if (!receiptDouble) {
+        showToast('Nenhum recibo aberto para exportar.', 'error');
+        return;
+    }
+
+    const clone = receiptDouble.cloneNode(true);
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:297mm;background:white;z-index:-1;';
+    holder.appendChild(clone);
+    document.body.appendChild(holder);
+
+    const receipt = getCurrentReceipt();
+    const tenant = receipt ? DB.getTenant(receipt.tenantId) : null;
+    const fileName = receipt
+        ? `recibo_${String(receipt.numero).padStart(4, '0')}_${tenant?.nome?.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]/g, '') || 'inquilino'}.pdf`
+        : 'recibo.pdf';
+
+    // PDF em A4 paisagem, fiel ao recibo impresso
+    html2pdf()
+        .set({
+            margin: [5, 5, 5, 5],
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            },
+            jsPDF: {
+                unit: 'mm',
+                format: 'a4',
+                orientation: 'landscape'
+            },
+            pagebreak: { mode: ['avoid-all'] }
+        })
+        .from(clone)
+        .save()
+        .then(() => {
+            holder.remove();
+        })
+        .catch(() => {
+            holder.remove();
+            showToast('Erro ao gerar o PDF.', 'error');
+        });
+}
+
+// Guarda o último recibo aberto para nomear o arquivo do PDF
+let _currentReceiptId = null;
+function getCurrentReceipt() {
+    return _currentReceiptId ? DB.getReceipt(_currentReceiptId) : null;
 }
 
 function generateAllReceipts() {

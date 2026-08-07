@@ -98,209 +98,152 @@ function renderRecentContracts(contracts) {
     const container = document.getElementById('recentContracts');
     const recent = contracts.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
     if (!recent.length) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-file"></i><p>Nenhum contrato ainda.</p>
-            <button class="btn btn-primary" onclick="navigateTo('contracts')"><i class="fas fa-plus"></i> Criar Contrato</button></div>`;
+        container.innerHTML = '<p class="empty-state">Nenhum contrato cadastrado</p>';
         return;
     }
-    container.innerHTML = recent.map(c => {
-        const t = DB.getTenant(c.tenantId);
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);gap:12px;">
-            <div style="flex:1;min-width:0;">
-                <div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t?.nome||'—')}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.imovelEndereco||''}</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-                <div style="font-weight:600;color:var(--text-primary);font-size:var(--font-size-sm);">${formatCurrency(c.valorTotal)}</div>
-                <span class="status-badge ${getStatusClass(c.status)}" style="font-size:0.625rem;display:inline-block;margin-top:2px;">${c.status}</span>
-            </div>
-        </div>`;
-    }).join('');
+    container.innerHTML = recent.map(c => `
+        <div class="recent-item">
+            <span class="recent-tenant">${c.tenantNome || '—'}</span>
+            <span class="recent-address">${c.imovelEndereco || c.imovel_endereco || '—'}</span>
+            <span class="recent-value">R$ ${Number(c.valorTotal || c.valor_total || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        </div>
+    `).join('');
 }
 
 function renderDueSoon(receipts) {
     const container = document.getElementById('dueSoon');
-    const now = new Date(); now.setHours(0,0,0,0);
-    const pending = receipts.filter(r => r.status === 'pendente' || r.status === 'atrasado');
-    const upcoming = pending.filter(r => {
-        const due = new Date(r.vencimento+'T12:00:00');
-        return Math.ceil((due-now)/(86400000)) <= 7 || r.status === 'atrasado';
-    }).sort((a,b) => new Date(a.vencimento)-new Date(b.vencimento));
-
-    if (!upcoming.length) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Tudo em dia! 🎉</p></div>`;
+    const now = new Date();
+    const due = receipts
+        .filter(r => r.status === 'pendente' || r.status === 'atrasado')
+        .sort((a,b) => new Date(a.vencimento) - new Date(b.vencimento))
+        .slice(0,5);
+    if (!due.length) {
+        container.innerHTML = '<p class="empty-state">Nenhum vencimento próximo</p>';
         return;
     }
-    container.innerHTML = upcoming.slice(0,5).map(r => {
-        const t = DB.getTenant(r.tenantId);
-        const due = new Date(r.vencimento+'T12:00:00');
-        const diff = Math.ceil((due-now)/86400000);
-        const daysText = r.status==='atrasado'?'⚠️ Vencido': diff===0?'🔴 Hoje': diff===1?'🔴 Amanhã':`🟡 Em ${diff} dias`;
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color);gap:12px;">
-            <div style="flex:1;min-width:0;">
-                <div style="font-weight:500;color:var(--text-primary);font-size:var(--font-size-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t?.nome||'—')}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${daysText}</div>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-                <div style="font-weight:600;color:var(--text-primary);font-size:var(--font-size-sm);">${formatCurrency(r.valorTotal)}</div>
-                <div style="font-size:var(--font-size-xs);color:var(--text-tertiary);margin-top:2px;">${formatDate(r.vencimento)}</div>
-            </div>
-        </div>`;
-    }).join('');
+    container.innerHTML = due.map(r => `
+        <div class="due-item ${r.status === 'atrasado' ? 'overdue' : ''}">
+            <span class="due-tenant">${r.tenantNome || '—'}</span>
+            <span class="due-date">${new Date(r.vencimento).toLocaleDateString('pt-BR')}</span>
+            <span class="due-value">R$ ${Number(r.valorTotal).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+            <span class="due-status">${r.status}</span>
+        </div>
+    `).join('');
 }
 
 function renderRevenueChart(receipts) {
-    const container = document.getElementById('revenueChart');
-    const now = new Date();
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
     const months = [];
-    for (let i=11; i>=0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-        months.push({month:d.getMonth(), year:d.getFullYear()});
+    const values = [];
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+        const monthReceipts = receipts.filter(r => r.month === m && r.year === y && r.status === 'pago');
+        const total = monthReceipts.reduce((s,r) => s + Number(r.valorTotal || 0), 0);
+        months.push(d.toLocaleDateString('pt-BR',{month:'short'}));
+        values.push(total);
     }
-    const hasData = receipts.some(r => r.status === 'pago');
-    if (!hasData) {
-        container.innerHTML = `<div class="chart-placeholder"><i class="fas fa-chart-line"></i><p>Receita aparece aqui conforme pagamentos são registrados.</p></div>`;
-        return;
-    }
-    const totalValues = months.map(m => receipts.filter(r=>r.month===m.month&&r.year===m.year&&r.status==='pago').reduce((s,r)=>s+r.valorTotal,0));
-    const maxValue = Math.max(...totalValues, 1);
-    container.innerHTML = `<div class="chart-container">${months.map((m,idx) => {
-        const h = (totalValues[idx]/maxValue)*100;
-        return `<div class="chart-bar-wrapper">
-            <div class="chart-bar-value">${formatCurrency(totalValues[idx])}</div>
-            <div class="chart-bar" style="height:${Math.max(h,4)}%"></div>
-            <div class="chart-bar-label">${getShortMonthName(m.month)}/${String(m.year).slice(2)}</div>
-        </div>`;
-    }).join('')}</div>`;
+    if (window.revenueChart) window.revenueChart.destroy();
+    window.revenueChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: months, datasets: [{ label: 'Recebido (R$)', data: values, backgroundColor: 'rgba(0, 179, 117, 0.6)', borderColor: '#00b375', borderWidth: 1, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } } }
+    });
 }
 
-// ==================== OWNER DATA ====================
+function updateCurrentDate() {
+    const now = new Date();
+    document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// ==================== OWNER DATA — Configurações ====================
+// Carrega os dados do proprietário e preenche os campos de Configurações
 function loadOwnerData() {
-    const data = DB.getOwnerData();
-    const nameEl = document.getElementById('ownerName');
-    const cpfEl = document.getElementById('ownerCPF');
-    const benEl = document.getElementById('ownerBeneficiary');
-    if (nameEl) nameEl.value = data.name || '';
-    if (cpfEl) cpfEl.value = data.cpf || '';
-    if (benEl) benEl.value = data.beneficiary || '';
+    const owner = DB.getOwnerData();
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    };
+    setVal('ownerName', owner.name);
+    setVal('ownerCPF', owner.cpf);
+    setVal('ownerBeneficiary', owner.beneficiary);
 }
 
+// Salva os dados do proprietário a partir dos campos de Configurações
 function saveOwnerData() {
     const data = {
-        name: document.getElementById('ownerName')?.value || '',
-        cpf: document.getElementById('ownerCPF')?.value || '',
-        beneficiary: document.getElementById('ownerBeneficiary')?.value || ''
+        name: document.getElementById('ownerName').value.trim(),
+        cpf: document.getElementById('ownerCPF').value.trim(),
+        beneficiary: document.getElementById('ownerBeneficiary').value.trim()
     };
     DB.saveOwnerData(data);
+    if (SupabaseDB.isReady()) SupabaseDB.saveOwnerData(data);
 }
 
-// ==================== BACKUP ====================
-function exportBackup() {
-    const data = DB.exportBackup();
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup-alugueis-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Backup exportado!', 'success');
-}
-
-function importBackup(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const data = JSON.parse(e.target.result);
-            DB.importBackup(data);
-            showToast('Backup importado!', 'success');
-            initApp();
-        } catch(err) {
-            showToast('Erro: '+err.message, 'error');
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
-
-function clearAllData() {
-    if (DB.clearAll()) {
-        showToast('Dados limpos.', 'info');
-        initApp();
-    }
-}
-
-// ==================== EVENTS ====================
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo(item.dataset.page);
-        });
-    });
-    document.getElementById('menuToggle')?.addEventListener('click', () => {
-        document.getElementById('sidebar')?.classList.toggle('open');
-    });
-    document.addEventListener('click', (e) => {
-        const sidebar = document.getElementById('sidebar');
-        const toggle = document.getElementById('menuToggle');
-        if (window.innerWidth<=768 && sidebar?.classList.contains('open') && !sidebar.contains(e.target) && !toggle?.contains(e.target)) {
-            sidebar.classList.remove('open');
-        }
-    });
-    document.querySelectorAll('.modal-overlay').forEach(o => {
-        o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('active'); });
-    });
-    document.addEventListener('keydown', (e) => {
-        if (e.key==='Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-    });
-
-    // Auto-login check
-    if (sessionStorage.getItem('recibo_logged_in') === 'true') {
-        document.getElementById('loginOverlay').classList.add('hidden');
-        initApp();
-    }
-});
-
-// ==================== SUPABASE SETTINGS ====================
-function saveSupabaseSettings() {
+// ==================== SETTINGS — Supabase ====================
+function saveSupabaseConfig() {
     const url = document.getElementById('supabaseUrl').value.trim();
     const key = document.getElementById('supabaseKey').value.trim();
-    const status = document.getElementById('supabaseStatus');
-    if (url && key) {
-        saveSupabaseConfig(url, key);
+    if (!url || !key) { showToast('Preencha URL e Key', 'error'); return; }
+    localStorage.setItem('recibo_supabase_config', JSON.stringify({ url, key }));
+    showToast('Configuração salva!', 'success');
+}
+
+async function testSupabaseConnection() {
+    const url = document.getElementById('supabaseUrl').value.trim();
+    const key = document.getElementById('supabaseKey').value.trim();
+    if (!url || !key) { showToast('Preencha URL e Key', 'error'); return; }
+    document.getElementById('supabaseStatus').textContent = '⏳ Testando...';
+    document.getElementById('supabaseStatus').style.color = '#f59e0b';
+    const client = initSupabase(url, key);
+    if (!client) { document.getElementById('supabaseStatus').textContent = '❌ Falha ao criar cliente'; document.getElementById('supabaseStatus').style.color = '#ef4444'; return; }
+    try {
+        const { data, error } = await client.from('owners').select('id').limit(1);
+        if (error) throw error;
+        document.getElementById('supabaseStatus').textContent = '✅ Conectado com sucesso!';
+        document.getElementById('supabaseStatus').style.color = '#22c55e';
+        showToast('Conexão OK', 'success');
+    } catch (e) {
+        document.getElementById('supabaseStatus').textContent = '❌ Erro: ' + e.message;
+        document.getElementById('supabaseStatus').style.color = '#ef4444';
+        showToast('Erro na conexão', 'error');
     }
 }
 
-function connectSupabase() {
+async function connectSupabase() {
     const url = document.getElementById('supabaseUrl').value.trim();
     const key = document.getElementById('supabaseKey').value.trim();
-    const status = document.getElementById('supabaseStatus');
-
-    if (!url || !key) {
-        status.textContent = '❌ Preencha a URL e a Key primeiro!';
-        status.style.color = '#ef4444';
-        return;
+    if (!url || !key) { showToast('Preencha URL e Key', 'error'); return; }
+    document.getElementById('supabaseStatus').textContent = '⏳ Conectando...';
+    document.getElementById('supabaseStatus').style.color = '#f59e0b';
+    const ready = await SupabaseDB.init(url, key);
+    if (ready) {
+        document.getElementById('supabaseStatus').textContent = '☁️ Conectado e sincronizado!';
+        document.getElementById('supabaseStatus').style.color = '#22c55e';
+        showToast('Conectado ao Supabase!', 'success');
+        loadOwnerData();
+        populateTenantSelect();
+        updateDashboard();
+        renderTenants();
+        renderContracts();
+        populateMonthFilter();
+        renderReceipts();
+    } else {
+        document.getElementById('supabaseStatus').textContent = '❌ Falha ao conectar';
+        document.getElementById('supabaseStatus').style.color = '#ef4444';
+        showToast('Falha ao conectar', 'error');
     }
-
-    SupabaseDB.init(url, key).then(ready => {
-        if (ready) {
-            status.textContent = '✅ Conectado ao Supabase!';
-            status.style.color = '#22c55e';
-            showToast('☁️ Supabase conectado com sucesso!', 'success');
-        } else {
-            status.textContent = '❌ Falha na conexão. Verifique URL e Key.';
-            status.style.color = '#ef4444';
-        }
-    });
 }
 
 function disconnectSupabase() {
+    localStorage.removeItem('recibo_supabase_config');
+    localStorage.removeItem('recibo_migrated_supabase');
     supabaseClient = null;
     SupabaseDB._client = null;
     SupabaseDB._ready = false;
-    localStorage.removeItem('recibo_supabase_config');
     document.getElementById('supabaseStatus').textContent = '🔌 Desconectado';
     document.getElementById('supabaseStatus').style.color = '#6b7280';
     showToast('Desconectado do Supabase.', 'info');
@@ -323,3 +266,21 @@ initApp = function() {
     loadSupabaseConfig();
     _origInitApp();
 };
+
+// Force sync from Supabase to localStorage
+async function forceSync() {
+    if (!SupabaseDB.isReady()) {
+        showToast('Supabase não conectado', 'error');
+        return;
+    }
+    showToast('🔄 Sincronizando...', 'info');
+    await SupabaseDB._syncDown();
+    loadOwnerData();
+    populateTenantSelect();
+    updateDashboard();
+    renderTenants();
+    renderContracts();
+    populateMonthFilter();
+    renderReceipts();
+    showToast('✅ Sincronizado do Supabase!', 'success');
+}
