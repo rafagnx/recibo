@@ -96,11 +96,12 @@ function renewContract(id) {
     if (!c) return;
     const t = DB.getTenant(c.tenantId);
 
-    // Calcula a data base: se o contrato está encerrado/vencido, renova a partir de HOJE;
-    // se ainda está ativo, estende a partir do fim atual.
-    const fimAtual = c.dataFim ? new Date(c.dataFim + 'T12:00:00') : null;
-    const hoje = new Date();
-    const baseDate = (fimAtual && fimAtual > hoje) ? fimAtual : hoje;
+    // SEMPRE renova a partir da data de fim atual do contrato.
+    // Se não houver data fim, usa a data de hoje.
+    const fimAtual = c.dataFim
+        ? new Date(c.dataFim + 'T12:00:00')
+        : new Date();
+    const baseDate = fimAtual;
 
     // Soma o número de meses à data base
     function addMonths(date, months) {
