@@ -159,11 +159,16 @@ function renderContracts() {
     tbody.innerHTML = contracts.map(c => {
         const t = DB.getTenant(c.tenantId);
         return `<tr>
-            <td><div style="font-weight:600;color:var(--text-primary);">${escapeHtml(t?.nome||'—')}</div></td>
-            <td><div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(c.imovelEndereco)}</div></td>
-            <td style="font-weight:600;color:var(--text-primary);">${formatCurrency(c.valorTotal)}</td>
-            <td>Dia ${c.diaVencimento}</td>
-            <td><span class="status-badge ${getStatusClass(c.status)}">${c.status}</span></td>
+            <td>
+                <div class="tb-user">
+                    ${avatarHtml(t?.nome)}
+                    <div class="tb-user-name">${escapeHtml(t?.nome||'—')}</div>
+                </div>
+            </td>
+            <td><div class="tb-address"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(c.imovelEndereco)}</div></td>
+            <td style="font-weight:700;color:var(--text-primary);">${formatCurrency(c.valorTotal)}</td>
+            <td><span class="due-chip"><i class="fas fa-calendar-day"></i> Dia ${c.diaVencimento}</span></td>
+            <td>${statusBadge(c.status)}</td>
             <td>
                 <div class="action-btns">
                     <button class="action-btn view-btn" onclick="viewContract('${c.id}')" title="Visualizar"><i class="fas fa-eye"></i></button>

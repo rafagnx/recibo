@@ -239,6 +239,10 @@ function deleteReceipt(receiptId) {
     if (!confirm('Excluir este recibo permanentemente?')) return;
     const receipts = DB.getReceipts().filter(r => r.id !== receiptId);
     DB.saveReceipts(receipts);
+    // Se estiver conectado ao Supabase, também exclui na nuvem
+    if (window.SupabaseDB && SupabaseDB.isReady()) {
+        SupabaseDB.deleteReceipt(receiptId);
+    }
     showToast('Recibo excluído.', 'info');
     renderReceipts();
     updateDashboard();
@@ -286,17 +290,22 @@ function renderReceipts() {
     tbody.innerHTML = receipts.map(r => {
         const t = DB.getTenant(r.tenantId);
         return `<tr>
-            <td><div style="font-weight:600;color:var(--text-primary);">${escapeHtml(t?.nome||'—')}</div></td>
-            <td>${r.competencia}</td>
-            <td style="font-weight:600;color:var(--text-primary);">${formatCurrency(r.valorTotal)}</td>
+            <td>
+                <div class="tb-user">
+                    ${avatarHtml(t?.nome)}
+                    <div class="tb-user-name">${escapeHtml(t?.nome||'—')}</div>
+                </div>
+            </td>
+            <td><span class="comp-chip"><i class="fas fa-calendar-alt"></i> ${r.competencia}</span></td>
+            <td style="font-weight:700;color:var(--text-primary);">${formatCurrency(r.valorTotal)}</td>
             <td>${formatDate(r.vencimento)}</td>
-            <td><span class="status-badge ${getStatusClass(r.status)}">${r.status}</span></td>
+            <td>${statusBadge(r.status)}</td>
             <td>
                 <div class="action-btns">
                     <button class="action-btn print-btn" onclick="openReceiptModal('${r.id}')" title="Ver/Imprimir"><i class="fas fa-receipt"></i></button>
                     ${r.status !== 'pago' ? `
-                    <button class="action-btn" style="color:var(--green-500);" onclick="markAsPaid('${r.id}')" title="Pago"><i class="fas fa-check"></i></button>` : `
-                    <button class="action-btn" style="color:var(--gold-400);" onclick="markAsPending('${r.id}')" title="Pendente"><i class="fas fa-undo"></i></button>`}
+                    <button class="action-btn" style="color:var(--green-500);" onclick="markAsPaid('${r.id}')" title="Marcar como Pago"><i class="fas fa-check"></i></button>` : `
+                    <button class="action-btn" style="color:var(--gold-400);" onclick="markAsPending('${r.id}')" title="Marcar como Pendente"><i class="fas fa-undo"></i></button>`}
                     <button class="action-btn delete-btn" onclick="deleteReceipt('${r.id}')" title="Excluir"><i class="fas fa-trash"></i></button>
                 </div>
             </td>

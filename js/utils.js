@@ -7,6 +7,40 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 }
 
+// ==================== AVATARS & BADGES ====================
+// Gera avatar circular com as iniciais do nome
+function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function initialsColor(name) {
+    const colors = ['#6366f1', '#8b5cf6', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#14b8a6'];
+    let hash = 0;
+    if (name) for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+}
+
+function avatarHtml(name, size = 38) {
+    const color = initialsColor(name);
+    return `<div class="avatar" style="width:${size}px;height:${size}px;background:${color}1f;color:${color};font-size:${Math.round(size*0.4)}px;">${escapeHtml(getInitials(name))}</div>`;
+}
+
+// Badge de status com ícone e cor semântica
+function statusBadge(status, label) {
+    const map = {
+        ativo:    { icon: 'fa-check-circle', cls: 'st-active' },
+        pago:     { icon: 'fa-check-circle', cls: 'st-active' },
+        pendente: { icon: 'fa-clock', cls: 'st-pending' },
+        atrasado: { icon: 'fa-exclamation-triangle', cls: 'st-late' },
+        encerrado:{ icon: 'fa-ban', cls: 'st-inactive' }
+    };
+    const m = map[status] || { icon: 'fa-circle', cls: 'st-inactive' };
+    return `<span class="status-badge ${m.cls}"><i class="fas ${m.icon}"></i>${escapeHtml(label || status)}</span>`;
+}
+
 // ==================== DATES ====================
 function formatDate(dateStr) {
     if (!dateStr) return '—';

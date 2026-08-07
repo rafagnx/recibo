@@ -189,13 +189,16 @@ function renderTenants() {
     tbody.innerHTML = tenants.map(t => {
         const docs = DB.getTenantDocs(t.id);
         return `<tr>
-            <td><div style="font-weight:600;color:var(--text-primary);">${escapeHtml(t.nome)}</div></td>
+            <td>
+                <div class="tb-user">
+                    ${avatarHtml(t.nome)}
+                    <div class="tb-user-name">${escapeHtml(t.nome)}</div>
+                </div>
+            </td>
             <td>${t.cpf || '—'}</td>
             <td>${t.telefone || '—'}</td>
             <td>${t.email || '—'}</td>
-            <td><span class="status-badge" style="background:rgba(99,102,241,0.12);color:#818cf8;">
-                <i class="fas fa-paperclip" style="font-size:0.75rem;"></i> ${docs.length}
-            </span></td>
+            <td><span class="doc-count-badge"><i class="fas fa-paperclip"></i> ${docs.length}</span></td>
             <td>
                 <div class="action-btns">
                     <button class="action-btn view-btn" onclick="viewTenant('${t.id}')" title="Detalhes"><i class="fas fa-eye"></i></button>

@@ -15,9 +15,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/print.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/styles.css?v=2.4">
+    <link rel="stylesheet" href="css/print.css?v=2.4">
+    <link rel="stylesheet" href="css/animations.css?v=2.4">
 </head>
 <body>
     <!-- ==================== LOGIN SCREEN ==================== -->
@@ -102,59 +102,72 @@
         <div class="page-container">
             <!-- ==================== DASHBOARD ==================== -->
             <section class="page active" id="page-dashboard">
+                <div class="dash-hero glass">
+                    <div class="dash-hero-info">
+                        <h2 class="dash-hero-title">Bem-vindo de volta! 👋</h2>
+                        <p class="dash-hero-sub">Aqui está o resumo da sua gestão de aluguéis hoje.</p>
+                    </div>
+                    <div class="dash-hero-date" id="heroDate"></div>
+                </div>
+
                 <div class="dashboard-grid">
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-card glass" onclick="navigateTo('tenants')">
+                        <div class="stat-icon stat-icon-blue"><i class="fas fa-users"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Inquilinos</span>
                             <span class="stat-value" id="statTenants">0</span>
                         </div>
+                        <div class="stat-trend stat-trend-neutral"><i class="fas fa-arrow-up"></i> total</div>
                     </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
+                    <div class="stat-card glass" onclick="navigateTo('contracts')">
+                        <div class="stat-icon stat-icon-indigo"><i class="fas fa-file-contract"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Contratos Ativos</span>
                             <span class="stat-value" id="statActiveContracts">0</span>
                         </div>
+                        <div class="stat-trend stat-trend-neutral"><i class="fas fa-arrow-up"></i> ativos</div>
                     </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-card glass" onclick="navigateTo('receipts')">
+                        <div class="stat-icon stat-icon-green"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Pagos Este Mês</span>
                             <span class="stat-value" id="statPaidReceipts">0</span>
                         </div>
+                        <div class="stat-trend stat-trend-good"><i class="fas fa-check"></i> em dia</div>
                     </div>
-                    <div class="stat-card glass">
-                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-card glass" onclick="navigateTo('receipts')">
+                        <div class="stat-icon stat-icon-gold"><i class="fas fa-clock"></i></div>
                         <div class="stat-info">
                             <span class="stat-label">Pendentes</span>
                             <span class="stat-value" id="statPendingReceipts">0</span>
                         </div>
+                        <div class="stat-trend stat-trend-warn"><i class="fas fa-exclamation"></i> atenção</div>
                     </div>
+                </div>
 
-                    <div class="dashboard-card glass wide" id="revenueCard">
+                <div class="dash-cards-3">
+                    <div class="dashboard-card glass" id="revenueCard">
                         <div class="card-header">
                             <h2><i class="fas fa-chart-bar"></i> Receita Mensal</h2>
+                            <span class="card-header-badge" id="revenueTotal">R$ 0,00</span>
                         </div>
-                        <div class="card-body" id="revenueChart"></div>
+                        <div class="card-body chart-body" id="revenueChart"></div>
                     </div>
 
                     <div class="dashboard-card glass">
                         <div class="card-header">
                             <h2><i class="fas fa-file-contract"></i> Contratos Recentes</h2>
+                            <button class="card-link" onclick="navigateTo('contracts')">Ver todos <i class="fas fa-arrow-right"></i></button>
                         </div>
-                        <div class="card-body">
-                            <div class="empty-state" id="recentContracts"></div>
-                        </div>
+                        <div class="card-body" id="recentContracts"></div>
                     </div>
 
                     <div class="dashboard-card glass">
                         <div class="card-header">
                             <h2><i class="fas fa-bell"></i> Vencimentos Próximos</h2>
+                            <button class="card-link" onclick="navigateTo('receipts')">Ver todos <i class="fas fa-arrow-right"></i></button>
                         </div>
-                        <div class="card-body">
-                            <div class="empty-state" id="dueSoon"></div>
-                        </div>
+                        <div class="card-body" id="dueSoon"></div>
                     </div>
                 </div>
             </section>
@@ -565,15 +578,16 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="js/db.js?v=2.1"></script>
-    <script src="js/supabase-config.js?v=2.1"></script>
-    <script src="js/supabase-db.js?v=2.1"></script>
-    <script src="js/utils.js?v=2.1"></script>
-    <script src="js/tenants.js?v=2.1"></script>
-    <script src="js/contracts.js?v=2.1"></script>
-    <script src="js/receipts.js?v=2.1"></script>
-    <script src="js/app.js?v=2.1"></script>
+    <script src="js/db.js?v=2.4"></script>
+    <script src="js/supabase-config.js?v=2.4"></script>
+    <script src="js/supabase-db.js?v=2.4"></script>
+    <script src="js/utils.js?v=2.4"></script>
+    <script src="js/tenants.js?v=2.4"></script>
+    <script src="js/contracts.js?v=2.4"></script>
+    <script src="js/receipts.js?v=2.4"></script>
+    <script src="js/app.js?v=2.4"></script>
 </body>
 </html>
 

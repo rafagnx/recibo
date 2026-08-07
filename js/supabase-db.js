@@ -436,6 +436,23 @@ const SupabaseDB = {
         return data ? this._mapReceiptFromDB(data) : null;
     },
 
+    async deleteReceipt(id) {
+        if (!this.isReady()) {
+            const list = JSON.parse(localStorage.getItem('recibo_receipts') || '[]');
+            localStorage.setItem('recibo_receipts', JSON.stringify(list.filter(r => r.id !== id)));
+            return true;
+        }
+        const { error } = await this._client.from('receipts').delete().eq('id', id);
+        if (error) {
+            console.error('Erro ao excluir recibo no Supabase:', error);
+            return false;
+        }
+        // Também remove do localStorage para manter consistência
+        const list = JSON.parse(localStorage.getItem('recibo_receipts') || '[]');
+        localStorage.setItem('recibo_receipts', JSON.stringify(list.filter(r => r.id !== id)));
+        return true;
+    },
+
     async _getNextReceiptNumber() {
         const { data } = await this._client
             .from('receipts')

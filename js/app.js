@@ -33,6 +33,20 @@ function doLogout() {
 }
 
 async function initApp() {
+    // 🧭 Bind de navegação das abas do menu lateral
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(item.dataset.page);
+        });
+    });
+    // Menu mobile (toggle)
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    }
+
     updateCurrentDate();
     
     // 🔄 Auto-conecta no Supabase e sincroniza dados
@@ -89,6 +103,19 @@ function updateDashboard() {
     document.getElementById('statPaidReceipts').textContent = paid.length;
     document.getElementById('statPendingReceipts').textContent = pending.length;
 
+    // Hero date
+    const heroDate = document.getElementById('heroDate');
+    if (heroDate) {
+        heroDate.textContent = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+
+    // Total recebido no mês (badge do gráfico)
+    const revenueTotal = document.getElementById('revenueTotal');
+    if (revenueTotal) {
+        const totalMes = paid.reduce((s, r) => s + Number(r.valorTotal || 0), 0);
+        revenueTotal.textContent = formatCurrency(totalMes);
+    }
+
     renderRecentContracts(contracts);
     renderDueSoon(receipts);
     renderRevenueChart(receipts);
@@ -96,44 +123,77 @@ function updateDashboard() {
 
 function renderRecentContracts(contracts) {
     const container = document.getElementById('recentContracts');
-    const recent = contracts.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,5);
+    const recent = [...contracts].sort((a,b) => new Date(b.createdAt || 0)-new Date(a.createdAt || 0)).slice(0,5);
     if (!recent.length) {
-        container.innerHTML = '<p class="empty-state">Nenhum contrato cadastrado</p>';
+        container.innerHTML = `<div class="dash-empty"><i class="fas fa-file-contract"></i><p>Nenhum contrato ainda</p><button class="btn btn-primary btn-sm" onclick="navigateTo('contracts')"><i class="fas fa-plus"></i> Criar</button></div>`;
         return;
     }
-    container.innerHTML = recent.map(c => `
-        <div class="recent-item">
-            <span class="recent-tenant">${c.tenantNome || '—'}</span>
-            <span class="recent-address">${c.imovelEndereco || c.imovel_endereco || '—'}</span>
-            <span class="recent-value">R$ ${Number(c.valorTotal || c.valor_total || 0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
-        </div>
-    `).join('');
+    container.innerHTML = recent.map(c => {
+        const t = DB.getTenant(c.tenantId);
+        const stClass = c.status === 'ativo' ? 'st-active' : 'st-inactive';
+        return `
+        <div class="dash-list-item">
+            <div class="dli-icon"><i class="fas fa-home"></i></div>
+            <div class="dli-main">
+                <span class="dli-title">${escapeHtml(t?.nome || c.tenantNome || '—')}</span>
+                <span class="dli-sub">${escapeHtml(c.imovelEndereco || c.imovel_endereco || '')}</span>
+            </div>
+            <div class="dli-value">
+                <span class="dli-amount">${formatCurrency(c.valorTotal || c.valor_total || 0)}</span>
+                <span class="dli-status ${stClass}">${c.status}</span>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 function renderDueSoon(receipts) {
     const container = document.getElementById('dueSoon');
-    const now = new Date();
     const due = receipts
         .filter(r => r.status === 'pendente' || r.status === 'atrasado')
         .sort((a,b) => new Date(a.vencimento) - new Date(b.vencimento))
         .slice(0,5);
     if (!due.length) {
-        container.innerHTML = '<p class="empty-state">Nenhum vencimento próximo</p>';
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-check"></i><p>Tudo em dia! 🎉</p></div>`;
         return;
     }
-    container.innerHTML = due.map(r => `
-        <div class="due-item ${r.status === 'atrasado' ? 'overdue' : ''}">
-            <span class="due-tenant">${r.tenantNome || '—'}</span>
-            <span class="due-date">${new Date(r.vencimento).toLocaleDateString('pt-BR')}</span>
-            <span class="due-value">R$ ${Number(r.valorTotal).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
-            <span class="due-status">${r.status}</span>
-        </div>
-    `).join('');
+    container.innerHTML = due.map(r => {
+        const t = DB.getTenant(r.tenantId);
+        const overdue = r.status === 'atrasado';
+        const daysText = overdue ? '⚠️ Vencido' : formatDate(r.vencimento);
+        return `
+        <div class="dash-list-item ${overdue ? 'overdue' : ''}">
+            <div class="dli-icon ${overdue ? 'dli-icon-warn' : ''}"><i class="fas ${overdue ? 'fa-exclamation-triangle' : 'fa-calendar'}"></i></div>
+            <div class="dli-main">
+                <span class="dli-title">${escapeHtml(t?.nome || r.tenantNome || '—')}</span>
+                <span class="dli-sub">${daysText}</span>
+            </div>
+            <div class="dli-value">
+                <span class="dli-amount">${formatCurrency(r.valorTotal)}</span>
+                <span class="dli-status ${overdue ? 'st-late' : 'st-pending'}">${r.status}</span>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 function renderRevenueChart(receipts) {
-    const ctx = document.getElementById('revenueChart');
-    if (!ctx) return;
+    const container = document.getElementById('revenueChart');
+    if (!container) return;
+
+    // Destrói instância anterior de forma segura
+    if (window.revenueChart && typeof window.revenueChart.destroy === 'function') {
+        window.revenueChart.destroy();
+    }
+
+    // Se Chart.js não estiver disponível, mostra placeholder
+    if (!window.Chart) {
+        container.innerHTML = '<div class="chart-placeholder"><i class="fas fa-chart-bar"></i><p>Gráfico indisponível</p></div>';
+        return;
+    }
+
+    // Garante que haja um <canvas> dentro do container (Chart.js exige canvas)
+    container.innerHTML = '<canvas></canvas>';
+    const canvas = container.querySelector('canvas');
+
     const months = [];
     const values = [];
     for (let i = 5; i >= 0; i--) {
@@ -146,12 +206,17 @@ function renderRevenueChart(receipts) {
         months.push(d.toLocaleDateString('pt-BR',{month:'short'}));
         values.push(total);
     }
-    if (window.revenueChart) window.revenueChart.destroy();
-    window.revenueChart = new Chart(ctx, {
-        type: 'bar',
-        data: { labels: months, datasets: [{ label: 'Recebido (R$)', data: values, backgroundColor: 'rgba(0, 179, 117, 0.6)', borderColor: '#00b375', borderWidth: 1, borderRadius: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } } }
-    });
+
+    try {
+        window.revenueChart = new Chart(canvas, {
+            type: 'bar',
+            data: { labels: months, datasets: [{ label: 'Recebido (R$)', data: values, backgroundColor: 'rgba(0, 201, 167, 0.7)', borderColor: '#00c9a7', borderWidth: 1, borderRadius: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#6b6b8a', callback: v => 'R$ ' + v.toLocaleString('pt-BR') }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#6b6b8a' }, grid: { display: false } } } }
+        });
+    } catch (e) {
+        console.error('Falha ao criar o gráfico:', e);
+        container.innerHTML = '<div class="chart-placeholder"><i class="fas fa-chart-bar"></i><p>Gráfico indisponível</p></div>';
+    }
 }
 
 function updateCurrentDate() {
