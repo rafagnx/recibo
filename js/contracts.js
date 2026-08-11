@@ -371,7 +371,10 @@ function printContract(contractId) {
     const html = `
     <div class="contract-print-wrapper">
         <div class="contract-print">
-            <div class="contract-title">CONTRATO DE LOCAÇÃO ${contract.imovelTipo?.toUpperCase() || 'RESIDENCIAL'}</div>
+            <div class="contract-title-row">
+                <span class="contract-title-text">CONTRATO DE LOCAÇÃO ${contract.imovelTipo?.toUpperCase() || 'RESIDENCIAL'}</span>
+                <img class="contract-logo" src="assets/logo.png" alt="Logo">
+            </div>
             
             <div class="contract-parties">
                 <p>SÃO PARTES NESTE INSTRUMENTO:</p>
@@ -384,7 +387,7 @@ function printContract(contractId) {
                 <p class="clause-title">${c.title}:</p>
                 <p class="clause-text">${c.text}</p>
                 ${c.items ? `<div class="clause-items">${c.items.map(i => `<p class="clause-item">${i}</p>`).join('')}</div>` : ''}
-                ${c.extra ? `<p class="clause-extra">${c.extra}</p>` : ''}
+                ${c.extra ? `<p class="clause-extra">${c.extra.replace('PARÁGRAFO ÚNICO', '<strong>PARÁGRAFO ÚNICO</strong>')}</p>` : ''}
             </div>`).join('')}
 
             <div class="contract-closing">
@@ -392,19 +395,18 @@ function printContract(contractId) {
             </div>
 
             <div class="contract-date">
-                <p>Nova Friburgo, ____ de _______________ de ______.</p>
+                <p>Nova Friburgo, ${fmtDate(new Date().toISOString().split('T')[0])}.</p>
             </div>
 
             <div class="contract-signatures">
                 <div class="signature-block">
                     <div class="signature-line"></div>
+                    <img class="signature-img" src="assets/assinatura-helena-azul.png" alt="Assinatura da LOCADORA">
                     <div class="signature-label"><strong>LOCADOR:</strong> ${owner.name || '________________________'}</div>
-                    <div class="signature-name">${owner.name || ''}</div>
                 </div>
                 <div class="signature-block">
                     <div class="signature-line"></div>
                     <div class="signature-label"><strong>LOCATÁRIO:</strong> ${tenant.nome}</div>
-                    <div class="signature-name">${tenant.nome}</div>
                 </div>
             </div>
 

@@ -1816,6 +1816,50 @@ a:hover { color: var(--primary-300); }
     color: #1a1a2e;
 }
 
+.contract-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.contract-title-text {
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #1a1a2e;
+}
+
+.contract-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
+.contract-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.contract-title-text {
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #1a1a2e;
+}
+
+.contract-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    opacity: 0.9;
+}
+
 .contract-parties {
     margin-bottom: 20px;
     font-size: 14px;
