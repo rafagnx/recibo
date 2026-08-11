@@ -1,6 +1,6 @@
 /* ============================================================
    📋 APOLLOSURFACE — Contracts Module
-   CRUD + Impressão de Contratos (18 cláusulas)
+   CRUD + Impressão de Contratos (17 cláusulas)
    ============================================================ */
 
 // ==================== CRUD ====================
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ==================== CONTRACT PRINT (18 Cláusulas) ====================
+// ==================== CONTRACT PRINT (17 Cláusulas) ====================
 
 function getContractClauses(contract, tenant, owner) {
     const monthNames = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -334,23 +334,22 @@ function getContractClauses(contract, tenant, owner) {
 
     return [
         { title: 'CLÁUSULA PRIMEIRA', text: `O objeto da presente locação é o imóvel situado na: ${imovel}` },
-        { title: 'CLÁUSULA SEGUNDA', text: `O prazo da locação é de 12 (doze) meses, iniciando-se em ${dataInicio} e a terminar ${dataFim}, independentemente de aviso, notificação ou interpelação judicial ou mesmo extrajudicial.` },
-        { title: 'CLÁUSULA TERCEIRA', text: `O aluguel mensal deverá ser pago até o dia ${diaVenc} (dia ${numeroPorExtenso(diaVenc).toLowerCase()}) do mês subsequente ao vencido, no local indicado pelo LOCADOR, é de ${valorAluguel} (${valorExtenso}) mensais, reajustados anualmente, de conformidade com a variação do IGP-M apurada no ano anterior, e na sua falta, por outro índice criado pelo Governo Federal e, ainda, em sua substituição, pela Fundação Getúlio Vargas, reajustamento este sempre incidente e calculado sobre o último aluguel pago no último mês do ano anterior.` },
-        { title: 'CLÁUSULA QUARTA', text: `O LOCATÁRIO pagará todos os impostos, tributos e taxas, despesas ordinárias de condomínio, bem como todas e quaisquer outras despesas incidentes sobre o imóvel e sua locação, ônus e encargos outros de que natureza seja, federal, estadual ou municipal, que recaiam ou venham a recair sobre o imóvel ora locado, sendo que correrão, também, por conta do LOCATÁRIO as despesas com ligação e consumo de luz, força que serão pagas diretamente às empresas concessionárias dos referidos serviços.` },
-        { title: 'CLÁUSULA QUINTA', text: `Em caso de mora no pagamento do aluguel, aplicar-se-á uma multa de 2% (dois por cento) sobre o valor devido e juros mensais de 1% (um por cento) do montante devido.` },
-        { title: 'CLÁUSULA SEXTA', text: `Fica convencionado ainda pelos contratantes que o pagamento da multa não significa a renúncia de qualquer direito ou aceitação da emenda judicial da mora, em caso de qualquer procedimento judicial contra o LOCATÁRIO.` },
-        { title: 'CLÁUSULA SÉTIMA', text: `As obras e despesas com a conservação, limpeza e asseio do imóvel correrão por conta, risco e ônus do LOCATÁRIO, ficando este obrigado a devolver o imóvel em perfeitas condições de limpeza, asseio, conservação e pintura, quando finda ou rescindida esta avença, sem qualquer responsabilidade pecuniária para o LOCADOR. O LOCATÁRIO não poderá realizar obras de vulto e nem modificar a estrutura do imóvel ora locado, sem prévia autorização por escrito da LOCADORA. Caso este consinta na realização das obras, estas ficarão desde logo, incorporadas ao imóvel, sem que assista ao LOCATÁRIO qualquer indenização pelas obras ou retenção por benfeitorias. As benfeitorias removíveis poderão ser retiradas, desde que não desfigurem o imóvel locado.`, extra: `PARÁGRAFO ÚNICO – O LOCATÁRIO declara estar recebendo, como de fato recebe, no ato da assinatura deste contrato, o imóvel com todas as dependências em condições de serem ocupadas, conforme LAUDO DE VISTORIA INICIAL em anexo, que passa a integrar o presente instrumento, comprometendo-se a restituí-lo nas mesmas condições em que o recebe, procedendo aos consertos e reparos dos danos que ocorrem durante a locação, sendo-lhe facultado pintar o imóvel quando bem lhe prover, observada a mesma cor e qualidade do material empregado, por sua conta a sem direito a qualquer indenização. Qualquer discordância quanto ao relatório de vistoria do atual estado do imóvel deverá ser feita à ADMINISTRADORA do mesmo, POR ESCRITO, no prazo de 10 (DEZ) dias, a partir da data do início do contrato. Após este prazo considerar-se-á aceita sem qualquer restrição.` },
-        { title: 'CLÁUSULA OITAVA', text: `O LOCATÁRIO declara, que o imóvel ora locado, destina-se única e exclusivamente para o seu uso residencial e de sua família.`, extra: `PARÁGRAFO ÚNICO: O LOCATÁRIO obriga por si e sua família, a cumprir e a fazer cumprir integralmente as disposições legais sobre o Condomínio, a sua Convenção e o seu Regulamento Interno.` },
-        { title: 'CLÁUSULA NONA', text: `O LOCATÁRIO não poderá sublocar transferir ou ceder o imóvel, sendo nulo de pleno direito qualquer ato praticado com este fim sem o consentimento prévio e por escrito do LOCADOR.` },
-        { title: 'CLÁUSULA DÉCIMA', text: `Em caso de sinistro parcial ou total do imóvel locado, que o torne inabitável, o presente contrato ficará rescindido, de pleno direito, independentemente de aviso ou interpelação judicial ou extrajudicial; no caso de incêndio parcial, obrigando a obras de reconstrução, o presente contrato terá suspendido a sua vigência e reduzida a renda do imóvel durante o período da reconstrução à metade do que na época for o aluguel, e sendo após a reconstrução devolvida o LOCATÁRIO pelo prazo restante do contrato, que ficará prorrogado pelo mesmo tempo de duração das obras de reconstrução.` },
-        { title: 'CLÁUSULA DÉCIMA PRIMEIRA', text: `Em caso de desapropriação total ou parcial do imóvel locado, ficará rescindido de pleno direito o presente contrato de locação, independente de quaisquer indenizações de ambas as partes ou contratantes.` },
-        { title: 'CLÁUSULA DÉCIMA SEGUNDA', text: `Em caso de falecimento do FIADOR, o LOCATÁRIO, deverá no prazo de 60 (sessenta) dias, dar substituto idôneo que possa garantir o valor locativo e encargos do referido imóvel, colocando o LOCADOR a salvaguarda.` },
-        { title: 'CLÁUSULA DÉCIMA TERCEIRA', text: `No caso de alienação do imóvel, obriga-se o LOCADOR, dar preferência ao LOCATÁRIO, e se o mesmo não se utilizar dessa prerrogativa, o LOCADOR deverá constar da respectiva escritura pública, a existência do presente contrato, para que o adquirente o respeite nos termos da legislação vigente.` },
-        { title: 'CLÁUSULA DÉCIMA QUARTA', text: `Como interveniente FIADOR e principal pagador do LOCATÁRIO, com este solidariamente responsável pelo pontual pagamento do aluguel, demais encargos e importâncias cobráveis e exigíveis, e, pelo fiel cumprimento de todas as cláusulas e condições deste contrato, não só até o final de seu prazo, como mesmo depois, até a efetiva entrega das chaves ao LOCADOR.` },
-        { title: 'CLÁUSULA DÉCIMA QUINTA', text: `Ao LOCADOR é facultado, por si ou seus procuradores, vistoriar o imóvel, sempre que achar conveniente, para certeza do cumprimento das obrigações assumidas neste contrato.` },
-        { title: 'CLÁUSULA DÉCIMA SEXTA', text: `Cabe ao LOCATÁRIO, o cumprimento, dentro dos prazos legais, de quaisquer multas ou intimações por infrações das leis, portarias ou regulamentos vigentes, originários de quaisquer repartições ou entidades. Obriga-se ainda, a entregar ao LOCADOR, dentro de prazos que permita o seu cumprimento, aviso ou notificação de interesse do imóvel, sob pena de, não o fazendo, assumir integral responsabilidade pela falta.` },
-        { title: 'CLÁUSULA DÉCIMA SÉTIMA', text: `A infração de qualquer das cláusulas do presente contrato, sujeita o infrator à multa de duas vezes o valor do aluguel, tomando-se por base, o último aluguel vencido, cobrável ou não por ação executiva, sem prejuízo da rescisão imediata deste contrato, além do pagamento de todas as despesas por procedimentos judiciais e outras sanções que o caso indicar.` },
-        { title: 'CLÁUSULA DÉCIMA OITAVA', text: `As partes contratantes obrigam-se por si, herdeiros e/ou sucessores, elegendo o Foro da Cidade de Nova Friburgo/RJ, para o processamento de qualquer ação oriunda da presente avença, renunciando, de futuro, a qualquer outro, por mais privilegiado que seja o domicílio dos mesmos.` }
+        { title: 'CLÁUSULA SEGUNDA', text: `O prazo da locação é de 12 (doze) meses, iniciando-se em ${dataInicio} e terminando em ${dataFim}.` },
+        { title: 'CLÁUSULA TERCEIRA', text: `O aluguel mensal é de ${valorAluguel} (${valorExtenso}), com vencimento todo dia ${diaVenc} de cada mês, reajustado anualmente pelo IGP-M ou, na sua falta, por índice oficial que o substitua.` },
+        { title: 'CLÁUSULA QUARTA', text: `Correrão por conta da LOCATÁRIA as despesas ordinárias de condomínio, quando houver, e os consumos de água, energia elétrica e demais serviços utilizados no imóvel. Outros tributos e encargos somente serão atribuídos à LOCATÁRIA quando expressamente previstos neste contrato ou permitidos pela legislação.` },
+        { title: 'CLÁUSULA QUINTA', text: `Em caso de atraso no pagamento do aluguel, aplicar-se-á multa de 2% (dois por cento) sobre o valor devido e juros de 1% (um por cento) ao mês.` },
+        { title: 'CLÁUSULA SEXTA', text: `O pagamento da multa por atraso não implica renúncia a qualquer direito da LOCADORA nem impede a adoção das medidas legais cabíveis.` },
+        { title: 'CLÁUSULA SÉTIMA', text: `A LOCATÁRIA deverá conservar, limpar e manter o imóvel em boas condições, devolvendo-o ao final da locação nas mesmas condições em que o recebeu, ressalvado o desgaste natural. Não poderá realizar obras ou alterar a estrutura do imóvel sem autorização prévia e escrita da LOCADORA. Benfeitorias não autorizadas não gerarão direito a indenização ou retenção, observada a legislação aplicável.`, extra: `PARÁGRAFO ÚNICO – A LOCATÁRIA declara receber o imóvel em condições de uso, conforme LAUDO DE VISTORIA INICIAL, que integra este contrato. Eventual discordância deverá ser comunicada por escrito no prazo de 10 (dez) dias do início da locação; após esse prazo, a vistoria será considerada aceita.` },
+        { title: 'CLÁUSULA OITAVA', text: `O imóvel destina-se única e exclusivamente ao uso residencial da LOCATÁRIA e de sua família. A LOCATÁRIA obriga-se a cumprir e fazer cumprir a Convenção de Condomínio e o Regulamento Interno.` },
+        { title: 'CLÁUSULA NONA', text: `A LOCATÁRIA não poderá sublocar, transferir ou ceder o imóvel, total ou parcialmente, sem consentimento prévio e por escrito da LOCADORA.` },
+        { title: 'CLÁUSULA DÉCIMA', text: `Em caso de sinistro que torne o imóvel inabitável, serão observadas as disposições legais aplicáveis quanto à continuidade ou rescisão da locação. Havendo necessidade de reconstrução, serão observados os efeitos legais sobre o aluguel e o prazo contratual.` },
+        { title: 'CLÁUSULA DÉCIMA PRIMEIRA', text: `Em caso de desapropriação total ou parcial do imóvel, serão observadas as disposições legais aplicáveis.` },
+        { title: 'CLÁUSULA DÉCIMA SEGUNDA', text: `No caso de alienação do imóvel, serão observadas as regras legais relativas ao direito de preferência da LOCATÁRIA, quando aplicáveis.` },
+        { title: 'CLÁUSULA DÉCIMA TERCEIRA', text: `A LOCADORA poderá vistoriar o imóvel mediante aviso prévio à LOCATÁRIA e em horário razoável, salvo situação emergencial.` },
+        { title: 'CLÁUSULA DÉCIMA QUARTA', text: `A LOCATÁRIA deverá cumprir, dentro dos prazos legais, multas ou intimações decorrentes de infrações praticadas por ela, seus familiares, visitantes ou prestadores, e comunicar à LOCADORA qualquer aviso ou notificação de interesse do imóvel.` },
+        { title: 'CLÁUSULA DÉCIMA QUINTA', text: `O descumprimento das obrigações deste contrato poderá ensejar notificação para regularização, aplicação das penalidades cabíveis e, quando previsto em lei, rescisão da locação. A LOCATÁRIA responderá pelos danos causados ao imóvel ou às áreas comuns por si, seus familiares, visitantes ou prestadores.` },
+        { title: 'CLÁUSULA DÉCIMA SEXTA', text: `Além da Convenção de Condomínio e do Regulamento Interno, a LOCATÁRIA, seus familiares, visitantes e prestadores deverão:`, items: [`a) Horário de silêncio: guardar silêncio e evitar ruídos, sons ou atividades que perturbem o sossego dos demais moradores, especialmente no período das 22h (vinte e duas horas) às 8h (oito horas), todos os dias da semana, sem prejuízo de horário mais restritivo previsto no Regulamento Interno do condomínio;`, `b) manter o imóvel e áreas sob sua responsabilidade limpos, sem descarte inadequado de lixo ou objetos;`, `c) respeitar as regras de segurança, portaria e acesso de visitantes;`, `d) utilizar adequadamente as áreas comuns;`, `e) realizar obras ou serviços ruidosos somente em dias úteis, das 8h às 18h, mediante comunicação prévia à administração.`], extra: `PARÁGRAFO ÚNICO – O descumprimento das regras desta cláusula, após notificação por escrito e não regularização no prazo de 5 (cinco) dias, poderá caracterizar infração contratual, sem prejuízo das multas condominiais e demais medidas legais cabíveis.` },
+        { title: 'CLÁUSULA DÉCIMA SÉTIMA', text: `Fica eleito o Foro da Comarca de Nova Friburgo/RJ para dirimir questões decorrentes deste contrato, ressalvadas as regras legais de competência.` }
     ];
 }
 
@@ -384,15 +383,16 @@ function printContract(contractId) {
             <div class="contract-clause">
                 <p class="clause-title">${c.title}:</p>
                 <p class="clause-text">${c.text}</p>
+                ${c.items ? `<div class="clause-items">${c.items.map(i => `<p class="clause-item">${i}</p>`).join('')}</div>` : ''}
                 ${c.extra ? `<p class="clause-extra">${c.extra}</p>` : ''}
             </div>`).join('')}
 
             <div class="contract-closing">
-                <p>E, por assim estarem justos e contratados, mandaram extrair o presente instrumento em duas (02) vias, para um só efeito, assinando-as, juntamente com as testemunhas, a tudo presentes.</p>
+                <p>E, por assim estarem justos e contratados, assinam o presente instrumento em duas (02) vias de igual teor e forma, juntamente com as testemunhas.</p>
             </div>
 
             <div class="contract-date">
-                <p>${contract.dataInicio ? fmtDate(contract.dataInicio) : 'Nova Friburgo, __ de ________ de ______'}.</p>
+                <p>Nova Friburgo, ____ de _______________ de ______.</p>
             </div>
 
             <div class="contract-signatures">

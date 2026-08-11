@@ -1849,6 +1849,18 @@ a:hover { color: var(--primary-300); }
     border-left: 2px solid #d8d4cc;
 }
 
+.clause-items {
+    margin: 4px 0 0 14px;
+}
+
+.clause-item {
+    margin: 3px 0;
+    font-size: 10.5px;
+    color: #3d3d3d;
+    text-indent: -14px;
+    padding-left: 14px;
+}
+
 .contract-closing {
     margin-top: 20px;
     font-size: 11px;
@@ -1888,6 +1900,13 @@ a:hover { color: var(--primary-300); }
     font-size: 13px;
     color: #6b7280;
     font-style: italic;
+}
+
+.signature-block .signature-img {
+    width: 180px;
+    height: 48px;
+    object-fit: contain;
+    margin: 0 auto;
 }
 
 .witness-row {
