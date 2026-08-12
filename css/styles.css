@@ -1916,6 +1916,7 @@ a:hover { color: var(--primary-300); }
 .contract-signatures {
     display: flex;
     justify-content: space-around;
+    align-items: flex-end;
     margin-top: 60px;
     gap: 60px;
 }
