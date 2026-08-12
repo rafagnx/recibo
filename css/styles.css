@@ -1832,8 +1832,8 @@ a:hover { color: var(--primary-300); }
 }
 
 .contract-logo {
-    width: 60px;
-    height: 60px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
     opacity: 0.9;
 }
@@ -1853,12 +1853,6 @@ a:hover { color: var(--primary-300); }
     color: #1a1a2e;
 }
 
-.contract-logo {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-    opacity: 0.9;
-}
 
 .contract-parties {
     margin-bottom: 20px;
