@@ -1,6 +1,6 @@
 @media print {
     @page {
-        margin: 3mm;
+        margin: 15mm;
         size: A4 portrait;
     }
     body, html, #app { 
