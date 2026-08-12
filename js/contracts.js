@@ -383,7 +383,7 @@ function printContract(contractId) {
             </div>
 
             ${clauses.map(c => `
-            <div class="contract-clause">
+            <div class="contract-clause" ${c.title === 'CLÁUSULA DÉCIMA PRIMEIRA' ? 'style="page-break-before: always; break-before: page;"' : ''}>
                 <p class="clause-title">${c.title}:</p>
                 <p class="clause-text">${c.text}</p>
                 ${c.items ? `<div class="clause-items">${c.items.map(i => `<p class="clause-item">${i}</p>`).join('')}</div>` : ''}
