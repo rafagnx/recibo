@@ -6,7 +6,7 @@
     body, html { margin: 0 !important; padding: 0 !important; background: white !important; }
     body > * { display: none !important; }
     body > .modal-overlay.active {
-        display: flex !important;
+        display: block !important;
         position: static !important;
         background: white !important;
         width: 100% !important;
