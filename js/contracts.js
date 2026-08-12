@@ -400,8 +400,8 @@ function printContract(contractId) {
 
             <div class="contract-signatures">
                 <div class="signature-block">
+                    <img class="signature-img" src="assets/assinatura-helena-azul.png" alt="Assinatura da LOCADORA" style="display: block; margin: 0 auto -10px auto;">
                     <div class="signature-line"></div>
-                    <img class="signature-img" src="assets/assinatura-helena-azul.png" alt="Assinatura da LOCADORA">
                     <div class="signature-label"><strong>LOCADOR:</strong> ${owner.name || '________________________'}</div>
                 </div>
                 <div class="signature-block">
