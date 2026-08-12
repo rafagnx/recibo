@@ -277,17 +277,17 @@ function renderContracts() {
     tbody.innerHTML = contracts.map(c => {
         const t = DB.getTenant(c.tenantId);
         return `<tr>
-            <td>
+            <td data-label="Inquilino">
                 <div class="tb-user">
                     ${avatarHtml(t?.nome)}
                     <div class="tb-user-name">${escapeHtml(t?.nome||'—')}</div>
                 </div>
             </td>
-            <td><div class="tb-address"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(c.imovelEndereco)}</div></td>
-            <td style="font-weight:700;color:var(--text-primary);">${formatCurrency(c.valorTotal)}</td>
-            <td><span class="due-chip"><i class="fas fa-calendar-day"></i> Dia ${c.diaVencimento}</span></td>
-            <td>${statusBadge(c.status)}</td>
-            <td>
+            <td data-label="Imóvel"><div class="tb-address"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(c.imovelEndereco)}</div></td>
+            <td data-label="Valor" style="font-weight:700;color:var(--text-primary);">${formatCurrency(c.valorTotal)}</td>
+            <td data-label="Vencimento"><span class="due-chip"><i class="fas fa-calendar-day"></i> Dia ${c.diaVencimento}</span></td>
+            <td data-label="Status">${statusBadge(c.status)}</td>
+            <td data-label="Ações">
                 <div class="action-btns">
                     <button class="action-btn renew-btn" onclick="renewContract('${c.id}')" title="Renovar Contrato"><i class="fas fa-sync-alt"></i></button>
                     <button class="action-btn view-btn" onclick="viewContract('${c.id}')" title="Visualizar"><i class="fas fa-eye"></i></button>

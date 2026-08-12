@@ -15,9 +15,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="css/styles.css?v=2.5">
-    <link rel="stylesheet" href="css/print.css?v=2.5">
-    <link rel="stylesheet" href="css/animations.css?v=2.5">
+    <link rel="stylesheet" href="css/styles.css?v=3.2-FINAL">
+    <link rel="stylesheet" href="css/print.css?v=3.2-FINAL">
+    <link rel="stylesheet" href="css/animations.css?v=3.2-FINAL">
+    <script>
+        // Detecta mobile imediatamente para evitar flash de desktop
+        (function() {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) document.documentElement.classList.add('is-mobile');
+        })();
+    </script>
 </head>
 <body>
     <!-- ==================== LOGIN SCREEN ==================== -->
@@ -79,6 +86,9 @@
             <div class="version-info">v2.0.0</div>
         </div>
     </aside>
+
+    <!-- Sidebar backdrop (mobile) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
@@ -557,7 +567,19 @@
 
     <!-- ==================== RECEIPT MODAL (Classic Brazilian Style) ==================== -->
     <div class="modal-overlay" id="receiptModal">
-        <div class="modal glass modal-lg" style="max-width: 1100px;">
+        <div class="modal glass modal-lg receipt-modal" style="max-width: 1100px; max-height: calc(100vh - 48px);">
+            <div class="modal-header">
+                <h2>Recibo de Aluguel</h2>
+                <div class="print-toolbar" style="display:none;">
+                    <button class="btn btn-primary" onclick="downloadReceiptPdf()">
+                        <i class="fas fa-file-pdf"></i> Baixar PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="printReceipts()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+                <button class="modal-close" onclick="closeReceiptModal()" aria-label="Fechar">&times;</button>
+            </div>
             <div class="modal-body" id="receiptPrintArea"></div>
             <div class="print-toolbar">
                 <button class="btn btn-primary" onclick="downloadReceiptPdf()">
@@ -580,15 +602,13 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="js/db.js?v=2.5"></script>
-    <script src="js/supabase-config.js?v=2.5"></script>
-    <script src="js/supabase-db.js?v=2.5"></script>
-    <script src="js/utils.js?v=2.5"></script>
-    <script src="js/tenants.js?v=2.5"></script>
-    <script src="js/contracts.js?v=2.5"></script>
-    <script src="js/receipts.js?v=2.5"></script>
-    <script src="js/app.js?v=2.5"></script>
+    <script src="js/db.js?v=3.2"></script>
+    <script src="js/supabase-config.js?v=3.2"></script>
+    <script src="js/supabase-db.js?v=3.2"></script>
+    <script src="js/utils.js?v=3.2"></script>
+    <script src="js/tenants.js?v=3.2"></script>
+    <script src="js/contracts.js?v=3.2"></script>
+    <script src="js/receipts.js?v=3.2"></script>
+    <script src="js/app.js?v=3.2"></script>
 </body>
 </html>
-
-

@@ -290,17 +290,17 @@ function renderReceipts() {
     tbody.innerHTML = receipts.map(r => {
         const t = DB.getTenant(r.tenantId);
         return `<tr>
-            <td>
+            <td data-label="Inquilino">
                 <div class="tb-user">
                     ${avatarHtml(t?.nome)}
                     <div class="tb-user-name">${escapeHtml(t?.nome||'—')}</div>
                 </div>
             </td>
-            <td><span class="comp-chip"><i class="fas fa-calendar-alt"></i> ${r.competencia}</span></td>
-            <td style="font-weight:700;color:var(--text-primary);">${formatCurrency(r.valorTotal)}</td>
-            <td>${formatDate(r.vencimento)}</td>
-            <td>${statusBadge(r.status)}</td>
-            <td>
+            <td data-label="Competência"><span class="comp-chip"><i class="fas fa-calendar-alt"></i> ${r.competencia}</span></td>
+            <td data-label="Valor" style="font-weight:700;color:var(--text-primary);">${formatCurrency(r.valorTotal)}</td>
+            <td data-label="Vencimento">${formatDate(r.vencimento)}</td>
+            <td data-label="Status">${statusBadge(r.status)}</td>
+            <td data-label="Ações">
                 <div class="action-btns">
                     <button class="action-btn print-btn" onclick="openReceiptModal('${r.id}')" title="Ver/Imprimir"><i class="fas fa-receipt"></i></button>
                     ${r.status !== 'pago' ? `

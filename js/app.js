@@ -38,13 +38,35 @@ async function initApp() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             navigateTo(item.dataset.page);
+            // Auto-fecha sidebar no mobile após navegar
+            closeSidebarMobile();
         });
     });
-    // Menu mobile (toggle)
+    // Menu mobile (toggle) com backdrop
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+        menuToggle.addEventListener('click', () => {
+            const isOpen = sidebar.classList.toggle('open');
+            if (backdrop) backdrop.classList.toggle('active', isOpen);
+            document.body.style.overflow = isOpen ? 'hidden' : '';
+        });
+    }
+    if (backdrop) {
+        backdrop.addEventListener('click', closeSidebarMobile);
+    }
+    // Swipe to close on mobile (right-to-left swipe on sidebar edge)
+    if (sidebar) {
+        let touchStartX = 0;
+        sidebar.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        sidebar.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const delta = touchEndX - touchStartX;
+            if (delta < -50) closeSidebarMobile();
+        }, { passive: true });
     }
 
     updateCurrentDate();
@@ -74,6 +96,14 @@ function autoGenerateMonthReceipts() {
     DB.generateMonthReceipts(now.getFullYear(), now.getMonth());
 }
 
+function closeSidebarMobile() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
 function navigateTo(page) {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -86,6 +116,10 @@ function navigateTo(page) {
     if (page === 'contracts') { populateTenantSelect(); renderContracts(); }
     if (page === 'receipts') { populateMonthFilter(); renderReceipts(); }
     if (page === 'settings') loadOwnerData();
+    // Scroll to top ao trocar de página no mobile
+    if (window.innerWidth <= 768) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 function updateDashboard() {
