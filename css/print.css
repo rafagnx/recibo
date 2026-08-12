@@ -1,7 +1,7 @@
 @media print {
     @page {
         margin: 3mm;
-        size: A4 landscape;
+        size: A4 portrait;
     }
     body, html { margin: 0 !important; padding: 0 !important; background: white !important; }
     body > * { display: none !important; }
